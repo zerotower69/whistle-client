@@ -58,12 +58,6 @@ const MainLayout: React.FC = () => {
       icon: <AppstoreOutlined />,
       path: '/plugins',
     },
-    {
-      key: '/settings',
-      label: '设置',
-      icon: <SettingOutlined />,
-      path: '/settings',
-    },
   ];
 
   // 根据当前路径获取面包屑
@@ -197,7 +191,7 @@ const MainLayout: React.FC = () => {
         </Header>
 
         {/* 内容区域 */}
-        <Content style={{ margin: '0 16px' }}>
+        <Content className="main-layout-content">
           {/* 面包屑 */}
           <Breadcrumb className="main-breadcrumb" items={getBreadcrumbs()} />
 

@@ -3,8 +3,7 @@ import MainLayout from '../layouts/MainLayout';
 import Network from '../pages/Network';
 import Rules from '../pages/Rules';
 import Values from '../pages/Values';
-import Plugins from '../pages/Plugins';
-import Settings from '../pages/Settings';
+import Plugins from '../pages/plugins';
 
 /**
  * 路由配置
@@ -34,10 +33,6 @@ const router = createHashRouter([
       {
         path: 'plugins',
         element: <Plugins />,
-      },
-      {
-        path: 'settings',
-        element: <Settings />,
       },
     ],
   },

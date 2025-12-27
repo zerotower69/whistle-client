@@ -124,6 +124,7 @@ export const closeWhistle = () => {
 
 export const showWin = (win) => {
   if (!win) {
+    console.error('showWin: win is null or undefined');
     return;
   }
   if (win.isMinimized()) {

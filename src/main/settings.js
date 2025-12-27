@@ -145,8 +145,8 @@ const _showSettings = () => {
   });
 };
 
-export const reloadPage = () => {
-  if (storageChanged) {
+export const reloadPage = (force) => {
+  if (force || storageChanged) {
     storageChanged = false;
     const win = getWin();
     if (win) {
@@ -174,6 +174,7 @@ export const showSettings = () => {
       nodeIntegration: true,
       contextIsolation: false,
       spellcheck: false,
+      sandbox: false,
     },
   });
   child._hasFindBar = true; // eslint-disable-line

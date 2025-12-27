@@ -273,10 +273,16 @@ process.parentPort.on('message', (data) => {
     return proxy.pluginMgr.uninstall(data.name);
   }
   if (type === 'enablePlugin') {
-    return proxy.pluginMgr.enablePlugin(data.name);
+    const disabledPlugins = proxy.rulesUtil.properties.get('disabledPlugins') || {};
+    delete disabledPlugins[data.name];
+    proxy.rulesUtil.properties.set('disabledPlugins', disabledPlugins);
+    return;
   }
   if (type === 'disablePlugin') {
-    return proxy.pluginMgr.disablePlugin(data.name);
+    const disabledPlugins = proxy.rulesUtil.properties.get('disabledPlugins') || {};
+    disabledPlugins[data.name] = 1;
+    proxy.rulesUtil.properties.set('disabledPlugins', disabledPlugins);
+    return;
   }
   if (type === 'exitWhistle') {
     return process.exit();

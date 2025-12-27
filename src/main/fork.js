@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { install } from './plugins';
+import { loadOpenPage } from './window';
 // The following imports may be needed for future features (e.g., restoring original Whistle UI loading)
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { getSettings, showSettings, authorization, reloadPage } from './settings';
@@ -47,8 +48,8 @@ const handleWhistleError = async (err) => {
   hasError = false;
 };
 
-const forkWhistle = (restart) => {
-  if (restart) {
+const forkWhistle = (isRestart) => {
+  if (isRestart) {
     closeWhistle();
   }
   let options;
@@ -133,18 +134,11 @@ const forkWhistle = (restart) => {
     }
     if (initing) {
       initing = false;
-      // Load the new React-based main layout
-      if (isDev && process.env['ELECTRON_RENDERER_URL']) {
-        // Development mode: load from vite dev server
-        win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/src/index.html`);
-      } else {
-        // Production mode: load from built files
-        const path = require('path');
-        win.loadFile(path.join(__dirname, '../renderer/src/index.html'));
-      }
+      // Load the open page first
+      loadOpenPage(win);
       createMenu();
     } else {
-      reloadPage();
+      reloadPage(isRestart);
     }
   });
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import './index.css';
 import {
-  Layout,
   Card,
   Button,
   List,
@@ -37,7 +37,6 @@ import {
   GlobalOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content } = Layout;
 const { Title, Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
@@ -53,8 +52,8 @@ interface Plugin {
   installed: boolean;
   enabled: boolean;
   installedVersion?: string;
+  latestVersion?: string;
   lastUpdated?: string;
-  size?: string;
   dependencies?: string[];
 }
 
@@ -66,7 +65,7 @@ const DEFAULT_REGISTRIES = [
   { label: '腾讯云镜像', value: 'https://mirrors.cloud.tencent.com/npm/' },
 ];
 
-const App: React.FC = () => {
+const Plugins: React.FC = () => {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -80,6 +79,7 @@ const App: React.FC = () => {
   const [selectedRegistry, setSelectedRegistry] = useState(DEFAULT_REGISTRIES[0].value);
   const [registryHistory, setRegistryHistory] = useState<string[]>([]);
   const [globalPluginsEnabled, setGlobalPluginsEnabled] = useState(true);
+  const [checkingUpdate, setCheckingUpdate] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     loadRegistryHistory();
@@ -94,6 +94,7 @@ const App: React.FC = () => {
           enabled: true, // 暂时默认为 true，后续优化
           installed: true,
           installedVersion: p.version,
+          latestVersion: p.version,
           description: p.description || '暂无描述',
           homepage: p.homepage,
           author: p.author,
@@ -260,12 +261,14 @@ const App: React.FC = () => {
 
     setSearchLoading(true);
     try {
-      // 使用 npm registry search API
-      const response = await fetch(
-        `https://registry.npmjs.org/-/v1/search?text=keywords:whistle+${encodeURIComponent(searchTerm)}&size=20`,
-      );
-      const data = await response.json();
+      const { ipcRenderer } = window.require('electron');
+      const result = await ipcRenderer.invoke('search-plugins', { query: searchTerm });
 
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      const data = result.data;
       const results = data.objects.map((obj: any) => ({
         name: obj.package.name,
         version: obj.package.version,
@@ -285,16 +288,75 @@ const App: React.FC = () => {
     }
   };
 
+  // 检查更新
+  const handleCheckUpdate = async (pluginName: string) => {
+    setCheckingUpdate((prev) => ({ ...prev, [pluginName]: true }));
+    try {
+      const { ipcRenderer } = window.require('electron');
+      const result = await ipcRenderer.invoke('check-plugin-update', {
+        name: pluginName,
+        registry: selectedRegistry,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error);
+      }
+
+      const latestVersion = result.latestVersion;
+
+      setInstalledPlugins((prev) =>
+        prev.map((p) => (p.name === pluginName ? { ...p, latestVersion } : p)),
+      );
+
+      if (latestVersion !== installedPlugins.find((p) => p.name === pluginName)?.installedVersion) {
+        messageApi.info(`插件 ${pluginName} 有新版本: ${latestVersion}`);
+      } else {
+        messageApi.success(`插件 ${pluginName} 已是最新版本`);
+      }
+    } catch (error: any) {
+      messageApi.error(`检查更新失败: ${error.message}`);
+    } finally {
+      setCheckingUpdate((prev) => ({ ...prev, [pluginName]: false }));
+    }
+  };
+
+  // 更新插件
+  const handleUpdatePlugin = async (pluginName: string) => {
+    setLoading(true);
+    try {
+      const { ipcRenderer } = window.require('electron');
+      const installData = {
+        pkgs: [{ name: pluginName }],
+        registry: selectedRegistry,
+      };
+
+      messageApi.info(`正在更新插件: ${pluginName}...`);
+      const result = await ipcRenderer.invoke('install-plugins', installData);
+
+      if (result.success) {
+        messageApi.success(`插件 ${pluginName} 更新成功`);
+        loadInstalledPlugins();
+      } else {
+        messageApi.error(`插件更新失败: ${result.error}`);
+      }
+    } catch (error: any) {
+      messageApi.error(`插件更新失败: ${error.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const installedCount = installedPlugins.length;
   const enabledCount = installedPlugins.filter((p) => p.enabled).length;
-  const availableUpdates = installedPlugins.filter((p) => p.version !== p.installedVersion).length;
+  const availableUpdates = installedPlugins.filter(
+    (p) => p.latestVersion && p.latestVersion !== p.installedVersion,
+  ).length;
 
   return (
-    <Layout style={{ height: '100vh' }}>
+    <div>
       {contextHolder}
-      <Header style={{ background: '#fff', padding: '0 24px', borderBottom: '1px solid #f0f0f0' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <Title level={3} style={{ margin: 0 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+          <Title level={2} className="page-title" style={{ margin: 0 }}>
             <AppstoreOutlined style={{ marginRight: 8 }} />
             插件管理
           </Title>
@@ -317,10 +379,9 @@ const App: React.FC = () => {
               安装插件
             </Button>
           </Space>
-        </div>
-      </Header>
+      </div>
 
-      <Content style={{ padding: '24px', overflow: 'auto' }}>
+      <div>
         {/* 统计信息卡片 */}
         <div className="stats-cards">
           <Row gutter={16}>
@@ -477,6 +538,29 @@ const App: React.FC = () => {
                     <Tooltip key="settings" title="插件设置">
                       <Button size="small" icon={<SettingOutlined />} type="text" />
                     </Tooltip>,
+                    <Button
+                      key="check-update"
+                      size="small"
+                      type="link"
+                      loading={checkingUpdate[plugin.name]}
+                      onClick={() => handleCheckUpdate(plugin.name)}
+                    >
+                      检查更新
+                    </Button>,
+                    plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion ? (
+                      <Button
+                        key="update"
+                        size="small"
+                        type="primary"
+                        onClick={() => handleUpdatePlugin(plugin.name)}
+                      >
+                        更新到 v{plugin.latestVersion}
+                      </Button>
+                    ) : plugin.latestVersion === plugin.installedVersion ? (
+                      <Text key="latest" type="secondary" style={{ fontSize: '12px' }}>
+                        已是最新版本
+                      </Text>
+                    ) : null,
                     <Popconfirm
                       key="delete"
                       title="确定要卸载这个插件吗？"
@@ -500,7 +584,7 @@ const App: React.FC = () => {
                           ) : (
                             <Tag color="default">已禁用</Tag>
                           )}
-                          {plugin.version !== plugin.installedVersion && (
+                          {plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion && (
                             <Tag color="warning" icon={<ExclamationCircleOutlined />}>
                               有更新
                             </Tag>
@@ -516,11 +600,10 @@ const App: React.FC = () => {
                         <div className="plugin-meta">
                           <Space split={<Divider type="vertical" />}>
                             <Text type="secondary">版本: {plugin.installedVersion}</Text>
-                            {plugin.version !== plugin.installedVersion && (
-                              <Text type="warning">最新: {plugin.version}</Text>
+                            {plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion && (
+                              <Text type="warning">最新: {plugin.latestVersion}</Text>
                             )}
-                            <Text type="secondary">大小: {plugin.size}</Text>
-                            <Text type="secondary">更新: {plugin.lastUpdated}</Text>
+                            {plugin.lastUpdated && <Text type="secondary">更新: {plugin.lastUpdated}</Text>}
                             {plugin.author && <Text type="secondary">作者: {plugin.author}</Text>}
                           </Space>
                         </div>
@@ -613,9 +696,9 @@ whistle.vase`}
             </Form.Item>
           </Form>
         </Modal>
-      </Content>
-    </Layout>
+      </div>
+    </div>
   );
 };
 
-export default App;
+export default Plugins;

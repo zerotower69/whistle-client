@@ -50,11 +50,18 @@ body {
   box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
 }
 
+.main-layout-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0 16px;
+}
+
 .main-content {
-  margin: 16px;
+  flex: 1;
+  margin-bottom: 16px;
   padding: 24px;
   background: #fff;
-  min-height: 280px;
   border-radius: 8px;
   overflow: auto;
 }

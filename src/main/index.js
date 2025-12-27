@@ -8,9 +8,9 @@ import { noop, showWin, getErrorStack, getErrorMsg, isMac, getDataUrl } from './
 import { DOCK_ICON } from './icons';
 import ctx from './context';
 import { showMessageBox } from './dialog';
-import { createWindow, restart, showWindow } from './window';
+import { createWindow, restart, showWindow, openMainWindow } from './window';
 import forkWhistle from './fork';
-import { install } from './plugins';
+import { registerIpcHandlers } from './ipc';
 import pkg from '../../package.json';
 
 const { version } = pkg;
@@ -100,6 +100,10 @@ const updateDock = () => {
     systemPreferences.setUserDefault('NSDisabledDictationMenuItem', 'boolean', true);
     systemPreferences.setUserDefault('NSDisabledCharacterPaletteMenuItem', 'boolean', true);
   }
+
+  // 注册所有 IPC 处理器
+  registerIpcHandlers();
+
   if (!app.requestSingleInstanceLock()) {
     // Windows 里面通过伪协议重新唤起客户端会触发 will-quit 事件
     return isMac ? quitApp() : null;
@@ -136,58 +140,10 @@ const updateDock = () => {
     process.nextTick(() => setFindBar(win));
   });
 
-  // IPC 处理器用于插件管理
-  ipcMain.handle('install-plugins', async (event, data) => {
-    try {
-      await install(data);
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  });
-
-  ipcMain.handle('uninstall-plugin', async (event, pluginName) => {
-    try {
-      ctx.sendMsg({ type: 'uninstallPlugin', name: pluginName });
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  });
-
-  ipcMain.handle('toggle-plugin', async (event, { name, enabled }) => {
-    try {
-      ctx.sendMsg({ type: enabled ? 'enablePlugin' : 'disablePlugin', name });
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  });
-
-  ipcMain.handle('get-installed-plugins', async (event) => {
-    try {
-      ctx.sendMsg({ type: 'getPlugins' });
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error.message };
-    }
-  });
-
-  ipcMain.on('refresh-plugins', (event) => {
-    ctx.sendMsg({ type: 'refreshPlugins' });
-  });
-
-  ipcMain.on('enableAllPlugins', (event) => {
-    ctx.sendMsg({ type: 'enableAllPlugins' });
-  });
-
-  ipcMain.on('disableAllPlugins', (event) => {
-    ctx.sendMsg({ type: 'disableAllPlugins' });
-  });
-
   app.whenReady().then(() => {
     app.userAgentFallback = `${app.userAgentFallback} WhistleClient/${version}`;
     createWindow();
+    // 监听设置变化以重启 whistle 进程
     forkWhistle();
     app.on('whistleSettingsChanged', forkWhistle);
   });

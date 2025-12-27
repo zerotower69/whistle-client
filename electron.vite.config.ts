@@ -33,19 +33,18 @@ export default defineConfig({
       outDir: 'build/renderer',
       rollupOptions: {
         input: {
-          index: resolve(__dirname, 'src/renderer/src/index.html'),
           open: resolve(__dirname, 'src/renderer/pages/open/index.html'),
           settings: resolve(__dirname, 'src/renderer/pages/settings/index.html'),
-          plugins: resolve(__dirname, 'src/renderer/pages/plugins/index.html'),
+          main: resolve(__dirname, 'src/renderer/next/index.html'),
         },
       },
     },
     server: {
-      // proxy: {
-      //   '/cgi-bin': 'http://127.0.0.1:8899',
-      //   '/plugin': 'http://127.0.0.1:8899',
-      //   '/img': 'http://127.0.0.1:8899',
-      // },
+      proxy: {
+        '/cgi-bin': 'http://127.0.0.1:8899',
+        '/plugin': 'http://127.0.0.1:8899',
+        '/img': 'http://127.0.0.1:8899',
+      },
     },
   },
 });

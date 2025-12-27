@@ -21,18 +21,6 @@ function isHttp(url: string) {
 }
 
 const App: React.FC = () => {
-  useEffect(() => {
-    const url = getDataUrl();
-    let clientUrl = 'whistle://client';
-
-    if (url && isHttp(url)) {
-      clientUrl = `whistle://client?dataUrl=${url}`;
-    }
-
-    // Auto-redirect to whistle protocol
-    window.location.assign(clientUrl);
-  }, []);
-
   const handleOpenClient = () => {
     const url = getDataUrl();
     let clientUrl = 'whistle://client';
@@ -41,11 +29,25 @@ const App: React.FC = () => {
       clientUrl = `whistle://client?dataUrl=${url}`;
     }
 
-    window.location.assign(clientUrl);
+    // Send IPC to main process to open main window
+    try {
+      const { ipcRenderer } = window.require('electron');
+      ipcRenderer.send('open-main-window');
+    } catch (e) {
+      console.error('Failed to send IPC message', e);
+      // Fallback for browser environment or if IPC fails
+      window.location.assign(clientUrl);
+    }
   };
 
+  // Download RootCA
   const handleDownloadCA = () => {
-    window.location.assign('/cgi-bin/rootca');
+    try {
+      const { ipcRenderer } = window.require('electron');
+      ipcRenderer.send('download-rootca');
+    } catch (e) {
+      window.location.assign('/cgi-bin/rootca');
+    }
   };
 
   return (

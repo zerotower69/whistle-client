@@ -1,5 +1,6 @@
 import npminstall from 'npminstall';
 import fs from 'fs';
+import path from 'path';
 import npa from 'npminstall/lib/npa';
 import Context from 'npminstall/lib/context';
 import { getPeerPlugins, WHISTLE_PLUGIN_RE } from 'whistle/lib/util/common';
@@ -62,4 +63,20 @@ const installPlugins = async (data) => {
   });
 };
 
+const uninstallPlugin = async (name) => {
+  const pluginPath = path.join(CLIENT_PLUGINS_PATH, 'node_modules', name);
+  try {
+    if (fs.existsSync(pluginPath)) {
+      await fs.promises.rm(pluginPath, { recursive: true, force: true });
+      refreshPlugins();
+      return true;
+    }
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+  return false;
+};
+
+export const uninstall = uninstallPlugin;
 export const install = installPlugins;
