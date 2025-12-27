@@ -78,6 +78,9 @@ importers:
       '@iconify-json/mdi':
         specifier: ^1.2.3
         version: 1.2.3
+      '@types/har-format':
+        specifier: ^1.2.16
+        version: 1.2.16
       '@types/node':
         specifier: ^22.19.3
         version: 22.19.3
@@ -111,6 +114,9 @@ importers:
       eslint-plugin-react:
         specifier: ^7.37.5
         version: 7.37.5(eslint@8.57.1)
+      perf-cascade:
+        specifier: ^3.0.3
+        version: 3.0.3
       prettier:
         specifier: ^3.2.4
         version: 3.7.4
@@ -1117,6 +1123,9 @@ packages:
 
   '@types/fs-extra@9.0.13':
     resolution: {integrity: sha512-nEnwB++1u5lVDM2UI4c1+5R+FYaKfaAzS4OococimjVm3nQw3TuzH5UNsocrcTBbhnerblyHj4A49qXbIiZdpA==}
+
+  '@types/har-format@1.2.16':
+    resolution: {integrity: sha512-fluxdy7ryD3MV6h8pTfTYpy/xQzCFC7m89nOH9y94cNqJ1mDIDPut7MnRHI3F6qRmh/cT2fUjG1MLdCNb4hE9A==}
 
   '@types/http-cache-semantics@4.0.4':
     resolution: {integrity: sha512-1m0bIFVc7eJWyve9S0RnuRgcQqF/Xd5QsUZAZeQFr1Q3/p9JWoQQEqmVy+DPTNpGXwhgIetAoYF8JSc33q29QA==}
@@ -3367,6 +3376,9 @@ packages:
   pend@1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
 
+  perf-cascade@3.0.3:
+    resolution: {integrity: sha512-2TFyFcBdJrbVU5DGlq32yVimwZ3FQkBX5zB+g2/ps/E60RrcUEUvuHgrPxpoUulhcujejGtIGlp9muQ+WU6Tlw==}
+
   perfect-debounce@2.0.0:
     resolution: {integrity: sha512-fkEH/OBiKrqqI/yIgjR92lMfs2K8105zt/VT6+7eTjNwisrsh47CeIED9z58zI7DfKdH3uHAn25ziRZn3kgAow==}
 
@@ -5461,6 +5473,8 @@ snapshots:
   '@types/fs-extra@9.0.13':
     dependencies:
       '@types/node': 22.19.3
+
+  '@types/har-format@1.2.16': {}
 
   '@types/http-cache-semantics@4.0.4': {}
 
@@ -8255,6 +8269,10 @@ snapshots:
       through: 2.3.8
 
   pend@1.2.0: {}
+
+  perf-cascade@3.0.3:
+    dependencies:
+      '@types/har-format': 1.2.16
 
   perfect-debounce@2.0.0: {}
 

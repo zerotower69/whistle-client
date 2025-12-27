@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { requireW2, compareFile, BASE_DIR, LOCALHOST, sudoPrompt } from './util';
 import { app } from 'electron';
+import ctx from './context';
 
 const {
   enableProxy: _enableProxy,
@@ -15,16 +16,39 @@ const TITLE = 'Whistle Web Debugging Proxy';
 const DISABLED_TITLE = `${TITLE} (Not Set As System Proxy)`;
 const PROXY_HELPER = path.join(BASE_DIR, 'whistle');
 let _isEnabled = false;
+let _initPromise = null;
+
+const notifyProxyStatus = () => {
+  const win = ctx.getWin();
+  if (win && !win.isDestroyed()) {
+    console.log('[Proxy] Notifying renderer, enabled:', _isEnabled);
+    win.webContents.send('proxy-status-changed', _isEnabled);
+  } else {
+    console.log('[Proxy] Cannot notify renderer: window not available or destroyed');
+  }
+};
 
 // Initialize proxy status
 const initProxyStatus = () => {
-  getServerProxy((err, status) => {
-    if (!err && status) {
-      _isEnabled = !!(status.http && status.http.enabled);
-      console.log('[Proxy] Initial status:', _isEnabled);
-    }
+  if (_initPromise) return _initPromise;
+  
+  _initPromise = new Promise((resolve) => {
+    getServerProxy((err, status) => {
+      if (!err && status) {
+        _isEnabled = !!(status.http && status.http.enabled);
+        console.log('[Proxy] Initial status:', _isEnabled);
+        // Don't notify here yet, window might not be ready
+      } else {
+        console.error('[Proxy] Failed to get initial status:', err);
+      }
+      resolve(_isEnabled);
+    });
   });
+  
+  return _initPromise;
 };
+
+// Start initialization immediately
 initProxyStatus();
 
 const installProxyHelper = async () => {
@@ -88,18 +112,44 @@ export const enableProxy = async (options) => {
     proxyHelper: PROXY_HELPER,
   });
   _isEnabled = true;
+  notifyProxyStatus();
 };
 
 export const disableProxy = async () => {
   await installProxyHelper();
   _disableProxy(PROXY_HELPER);
   _isEnabled = false;
+  notifyProxyStatus();
 };
 
 export const isEnabled = () => _isEnabled;
 
+export const checkProxyStatus = () => {
+  return new Promise((resolve) => {
+    getServerProxy((err, status) => {
+      if (!err && status) {
+        const enabled = !!(status.http && status.http.enabled);
+        if (enabled !== _isEnabled) {
+          _isEnabled = enabled;
+          console.log('[Proxy] Status changed:', _isEnabled);
+          notifyProxyStatus();
+        }
+      } else if (err) {
+        console.error('[Proxy] Check status error:', err);
+      }
+      resolve(_isEnabled);
+    });
+  });
+};
+
+// 定期检查代理状态 (每 3 秒)
+setInterval(checkProxyStatus, 3000);
+
 export const setEnabled = (flag) => {
-  _isEnabled = flag;
+  if (_isEnabled !== flag) {
+    _isEnabled = flag;
+    notifyProxyStatus();
+  }
 };
 
 export const getTitle = () => (_isEnabled !== false ? TITLE : DISABLED_TITLE);

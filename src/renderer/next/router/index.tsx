@@ -4,6 +4,7 @@ import Network from '../pages/Network';
 import Rules from '../pages/Rules';
 import Values from '../pages/Values';
 import Plugins from '../pages/plugins';
+import ErrorBoundary from '../components/ErrorBoundary';
 
 /**
  * 路由配置
@@ -12,7 +13,11 @@ import Plugins from '../pages/plugins';
 const router = createHashRouter([
   {
     path: '/',
-    element: <MainLayout />,
+    element: (
+      <ErrorBoundary>
+        <MainLayout />
+      </ErrorBoundary>
+    ),
     children: [
       {
         index: true,

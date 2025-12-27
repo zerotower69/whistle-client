@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Switch, Button, Breadcrumb, Typography, theme, App } from 'antd';
+import { Layout, Menu, Switch, Button, theme, App } from 'antd';
 import LogViewer from '../components/LogViewer';
 import {
   GlobalOutlined,
@@ -16,7 +16,6 @@ import {
 import type { MenuItem } from '../types';
 
 const { Header, Sider, Content } = Layout;
-const { Title } = Typography;
 
 /**
  * 主布局组件
@@ -32,10 +31,10 @@ const MainLayout: React.FC = () => {
 
   // 加载上次选中的 Tab 和主题
   React.useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+
     const loadSettings = async () => {
       try {
-        const { ipcRenderer } = window.require('electron');
-
         // 加载 Tab
         const lastTab = await ipcRenderer.invoke('get-setting', 'lastSelectedTab');
         if (lastTab && lastTab !== location.pathname) {
@@ -57,6 +56,27 @@ const MainLayout: React.FC = () => {
       }
     };
     loadSettings();
+
+    // 监听代理状态变化
+    const handleProxyStatusChange = (_: any, enabled: boolean) => {
+      setProxyEnabled(enabled);
+    };
+    ipcRenderer.on('proxy-status-changed', handleProxyStatusChange);
+
+    // 窗口聚焦时重新检查状态
+    const handleFocus = async () => {
+      try {
+        const currentStatus = await ipcRenderer.invoke('get-proxy-status');
+        setProxyEnabled(!!currentStatus);
+        // eslint-disable-next-line no-empty
+      } catch (e) {}
+    };
+    window.addEventListener('focus', handleFocus);
+
+    return () => {
+      ipcRenderer.removeListener('proxy-status-changed', handleProxyStatusChange);
+      window.removeEventListener('focus', handleFocus);
+    };
   }, []);
 
   const {
@@ -90,21 +110,6 @@ const MainLayout: React.FC = () => {
       path: '/plugins',
     },
   ];
-
-  // 根据当前路径获取面包屑
-  const getBreadcrumbs = () => {
-    const path = location.pathname;
-    const menuItem = menuItems.find((item) => item.path === path);
-
-    return [
-      {
-        title: '首页',
-      },
-      {
-        title: menuItem?.label || '未知页面',
-      },
-    ];
-  };
 
   // 处理菜单点击
   const handleMenuClick = (e: { key: string }) => {

@@ -3,7 +3,7 @@ import { install, uninstall } from './plugins';
 import { openMainWindow } from './window';
 import { formatPluginName } from './util';
 import { showSettings, getSettings } from './settings';
-import { enableProxy, disableProxy, isEnabled } from './proxy';
+import { enableProxy, disableProxy, isEnabled, checkProxyStatus } from './proxy';
 import storage from './storage';
 import ctx from './context';
 
@@ -141,7 +141,7 @@ const ipcHandlers = {
         }
       },
       'get-proxy-status': async () => {
-        return isEnabled();
+        return checkProxyStatus();
       },
       'toggle-proxy': async (event, enabled) => {
         try {

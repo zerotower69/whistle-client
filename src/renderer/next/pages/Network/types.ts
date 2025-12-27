@@ -5,7 +5,7 @@
 export interface NetworkRequest {
   id: string;
   url: string;
-  method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'OPTIONS' | 'HEAD';
+  method: string;
   statusCode: number;
   statusText: string;
   protocol: string;
@@ -60,3 +60,16 @@ export type ResourceType =
   | 'websocket'
   | 'media'
   | 'other';
+
+export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS' | 'CONNECT' | 'TRACE';
+
+export interface WaterfallPhase {
+  name: string;
+  duration: number;
+  color: string;
+}
+
+export interface WaterfallData {
+  startOffset: number;
+  phases: WaterfallPhase[];
+}

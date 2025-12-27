@@ -832,13 +832,13 @@ whistle.vase`}
           >
             <Space size="large">
               <span>
-                <Tag size="small">↵</Tag> 搜索
+                <Tag>↵</Tag> 搜索
               </span>
               <span>
-                <Tag size="small">↑↓</Tag> 选择
+                <Tag>↑↓</Tag> 选择
               </span>
               <span>
-                <Tag size="small">ESC</Tag> 关闭
+                <Tag>ESC</Tag> 关闭
               </span>
             </Space>
             <span>Powered by npm registry</span>

@@ -3,8 +3,21 @@ process.env.ELECTRON_RUN_AS_NODE = '1';
 import path from 'path';
 import fs from 'fs';
 import net from 'net';
+import os from 'os';
 import { fileURLToPath } from 'url';
 import whistle from 'whistle';
+
+const getLocalIP = () => {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return LOCALHOST;
+};
 import {
   PROC_PATH,
   BASE_DIR,
@@ -218,8 +231,25 @@ const proxy = whistle(
 
       const method = data.req.method || 'UNKNOWN';
       const fullUrl = data.url || 'UNKNOWN';
+
+      // 排除本地开发服务和内部资源
+      const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
+      const localIP = getLocalIP();
+      const isLocalDev = rendererUrl && fullUrl.startsWith(rendererUrl);
+      const isInternal =
+        fullUrl.startsWith('devtools://') ||
+        fullUrl.startsWith('chrome-extension://') ||
+        fullUrl.includes('/@vite/client') ||
+        fullUrl.includes('/__uno.css') ||
+        fullUrl.includes('127.0.0.1') ||
+        fullUrl.includes('localhost') ||
+        (localIP !== LOCALHOST && fullUrl.includes(localIP));
+
+      if (isLocalDev || isInternal) {
+        return;
+      }
+
       const id = data.id || `${Date.now()}-${Math.random()}`;
-      
       const reqHeaders = data.req.headers || {};
       const initialReqSize = parseInt(reqHeaders['content-length'], 10) || 0;
 
@@ -267,7 +297,7 @@ const proxy = whistle(
         const statusCode = data.res.statusCode || 0;
         resHeaders = data.res.headers || {};
         currentResSize = parseInt(resHeaders['content-length'], 10) || 0;
-        
+
         sendMsg({
           type: 'log',
           level: 'info',
@@ -285,6 +315,10 @@ const proxy = whistle(
         else if (contentType.includes('json') || contentType.includes('xml')) type = 'fetch';
 
         // 发送更新后的会话信息
+        const endTime = data.endTime || Date.now();
+        const startTime = data.startTime || Date.now();
+        const totalTime = endTime - startTime;
+
         sendMsg({
           type: 'session-update',
           id: id,
@@ -295,8 +329,12 @@ const proxy = whistle(
             responseSize: currentResSize,
             totalSize: currentReqSize + currentResSize,
             type: type,
-            endTime: data.endTime || Date.now(),
-            'timing.total': (data.endTime || Date.now()) - (data.startTime || Date.now()),
+            endTime: endTime,
+            timing: {
+              total: totalTime,
+              waiting: totalTime > 0 ? totalTime * 0.8 : 0,
+              contentDownload: totalTime > 0 ? totalTime * 0.2 : 0,
+            },
           },
         });
       });
@@ -307,7 +345,7 @@ const proxy = whistle(
         currentReqSize = body.length;
         const contentType = (reqHeaders['content-type'] || '').toLowerCase();
         const isBinary = /image|video|audio|zip|pdf|octet-stream/.test(contentType);
-        
+
         sendMsg({
           type: 'session-update',
           id: id,

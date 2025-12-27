@@ -2,6 +2,7 @@ import React from 'react';
 import { Empty } from 'antd';
 import type { NetworkRequest } from '../../types';
 import { getPhaseColors, formatPhaseName } from '../../utils/waterfallUtils';
+import { formatTime } from '../../utils/formatters';
 
 interface TimelineTabProps {
   request: NetworkRequest | null;
@@ -64,7 +65,7 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ request }) => {
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 24 }}>
         <h3>请求时序图</h3>
-        <p style={{ color: '#999' }}>总耗时: {timing.total.toFixed(2)} ms</p>
+        <p style={{ color: '#999' }}>总耗时: {formatTime(timing.total)}</p>
       </div>
 
       <div style={{ marginBottom: 32 }}>
@@ -79,7 +80,7 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ request }) => {
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span>{phase.label}</span>
                 <span>
-                  {phase.duration.toFixed(2)} ms ({percentage.toFixed(1)}%)
+                  {formatTime(phase.duration)} ({percentage.toFixed(1)}%)
                 </span>
               </div>
               <div

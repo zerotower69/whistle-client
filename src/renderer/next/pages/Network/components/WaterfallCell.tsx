@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Tooltip } from 'antd';
-import type { NetworkRequest } from '../types';
+import type { NetworkRequest, WaterfallPhase } from '../types';
 import { calculateWaterfallData, formatPhaseName } from '../utils/waterfallUtils';
 
 // Constants for dimensions
@@ -17,7 +17,7 @@ interface WaterfallCellProps {
   request: NetworkRequest;
   baseTime: number; // First request start time
   maxTime: number; // Maximum time range (for calculating scale)
-  width?: number; // Waterfall column width
+  width?: number; // Initial waterfall column width
 }
 
 /**
@@ -27,8 +27,26 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
   request,
   baseTime,
   maxTime,
-  width = 300,
+  width: initialWidth = 300,
 }) => {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [width, setWidth] = useState(initialWidth);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const observer = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        if (entry.contentRect.width > 0) {
+          setWidth(entry.contentRect.width);
+        }
+      }
+    });
+
+    observer.observe(containerRef.current);
+    return () => observer.disconnect();
+  }, []);
+
   const waterfall = calculateWaterfallData(request, baseTime);
   const { startOffset, phases } = waterfall;
 
@@ -40,7 +58,7 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
   const tooltipContent = (
     <div>
       <div style={{ marginBottom: TOOLTIP_MARGIN_BOTTOM, fontWeight: 'bold' }}>{request.url}</div>
-      {phases.map((phase, index) => (
+      {phases.map((phase: WaterfallPhase, index: number) => (
         <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: TOOLTIP_GAP }}>
           <span>
             <span
@@ -67,10 +85,12 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
   return (
     <Tooltip title={tooltipContent} placement="left">
       <div
+        ref={containerRef}
         style={{
           position: 'relative',
           height: CELL_HEIGHT,
-          width,
+          width: '100%',
+          minWidth: 100,
         }}
       >
         {/* Starting offset (empty space) */}
@@ -84,9 +104,9 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
         />
 
         {/* Phase blocks */}
-        {phases.map((phase, index) => {
+        {phases.map((phase: WaterfallPhase, index: number) => {
           const prevPhases = phases.slice(0, index);
-          const prevDuration = prevPhases.reduce((sum, p) => sum + p.duration, 0);
+          const prevDuration = prevPhases.reduce((sum: number, p: WaterfallPhase) => sum + p.duration, 0);
           const left = offsetPx + prevDuration * scale;
           const phaseWidth = phase.duration * scale;
 

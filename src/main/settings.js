@@ -1,4 +1,5 @@
 import path from 'path';
+import os from 'os';
 import { isIP } from 'net';
 import { lookup } from 'dns';
 import { BrowserWindow, ipcMain, app, globalShortcut } from 'electron';
@@ -8,6 +9,18 @@ import { getWin, getOptions, getChild, sendMsg, isRunning } from './context';
 import { enableProxy, isEnabled } from './proxy';
 import storage from './storage';
 import { showWindow } from './window';
+
+const getLocalIP = () => {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return LOCALHOST;
+};
 
 const username = USERNAME;
 const password = `pass_${Math.random()}`;
@@ -32,6 +45,28 @@ const getValue = (data, key) => data && (data.getProperty ? data.getProperty(key
 
 const parseSettings = (data) => {
   const headerSize = +getValue(data, 'maxHttpHeaderSize');
+  let bypass = getString(getValue(data, 'bypass'), 2000);
+
+  // 自动排除 Vite 开发服务器
+  const rendererUrl = process.env['ELECTRON_RENDERER_URL'];
+  if (rendererUrl) {
+    try {
+      const url = new URL(rendererUrl);
+      const port = url.port;
+      const localIP = getLocalIP();
+      const viteBypass = [`localhost:${port}`, `127.0.0.1:${port}`, `${localIP}:${port}`];
+      
+      const bypassList = bypass ? bypass.split(/[,\s]+/) : [];
+      viteBypass.forEach(host => {
+        if (!bypassList.includes(host)) {
+          bypassList.push(host);
+        }
+      });
+      bypass = bypassList.join(', ');
+    } catch (e) {
+      console.error('[Settings] Failed to parse ELECTRON_RENDERER_URL:', e);
+    }
+  }
 
   return {
     port: getPort(getValue(data, 'port'), DEFAULT_PORT),
@@ -40,7 +75,7 @@ const parseSettings = (data) => {
     password: getString(getValue(data, 'password'), 16),
     uiAuth: { username, password },
     host: getString(getValue(data, 'host'), 255),
-    bypass: getString(getValue(data, 'bypass'), 2000),
+    bypass,
     useDefaultStorage: !!getValue(data, 'useDefaultStorage'),
     maxHttpHeaderSize: HEADER_SIZE_OPTIONS.includes(headerSize) ? headerSize : 256,
   };

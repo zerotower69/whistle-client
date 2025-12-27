@@ -1,7 +1,7 @@
 import React from 'react';
 import { Descriptions, Empty } from 'antd';
 import type { NetworkRequest } from '../../types';
-import { formatFileSize, formatDateTime } from '../../utils/formatters';
+import { formatFileSize, formatDateTime, formatTime } from '../../utils/formatters';
 
 interface OverviewTabProps {
   request: NetworkRequest | null;
@@ -32,41 +32,41 @@ const OverviewTab: React.FC<OverviewTabProps> = ({ request }) => {
       <Descriptions title="Timing" bordered column={1} size="small" style={{ marginTop: 16 }}>
         {request.timing && request.timing.queueing > 0 && (
           <Descriptions.Item label="Queueing">
-            {request.timing.queueing.toFixed(2)} ms
+            {formatTime(request.timing.queueing)}
           </Descriptions.Item>
         )}
         {request.timing && request.timing.dnsLookup > 0 && (
           <Descriptions.Item label="DNS Lookup">
-            {request.timing.dnsLookup.toFixed(2)} ms
+            {formatTime(request.timing.dnsLookup)}
           </Descriptions.Item>
         )}
         {request.timing && request.timing.initialConnection > 0 && (
           <Descriptions.Item label="Initial Connection">
-            {request.timing.initialConnection.toFixed(2)} ms
+            {formatTime(request.timing.initialConnection)}
           </Descriptions.Item>
         )}
         {request.timing && request.timing.sslHandshake > 0 && (
           <Descriptions.Item label="SSL/TLS">
-            {request.timing.sslHandshake.toFixed(2)} ms
+            {formatTime(request.timing.sslHandshake)}
           </Descriptions.Item>
         )}
         {request.timing && request.timing.requestSent > 0 && (
           <Descriptions.Item label="Request Sent">
-            {request.timing.requestSent.toFixed(2)} ms
+            {formatTime(request.timing.requestSent)}
           </Descriptions.Item>
         )}
         {request.timing && request.timing.waiting > 0 && (
           <Descriptions.Item label="Waiting (TTFB)">
-            {request.timing.waiting.toFixed(2)} ms
+            {formatTime(request.timing.waiting)}
           </Descriptions.Item>
         )}
         {request.timing && request.timing.contentDownload > 0 && (
           <Descriptions.Item label="Content Download">
-            {request.timing.contentDownload.toFixed(2)} ms
+            {formatTime(request.timing.contentDownload)}
           </Descriptions.Item>
         )}
         {request.timing && (
-          <Descriptions.Item label="Total">{request.timing.total.toFixed(2)} ms</Descriptions.Item>
+          <Descriptions.Item label="Total">{formatTime(request.timing.total)}</Descriptions.Item>
         )}
       </Descriptions>
 

@@ -17,7 +17,7 @@ export const useNetworkFilter = (requests: NetworkRequest[]) => {
       }
 
       // Method filter
-      if (selectedMethods.length > 0 && !selectedMethods.includes(request.method)) {
+      if (selectedMethods.length > 0 && !selectedMethods.includes(request.method as HttpMethod)) {
         return false;
       }
 

@@ -130,6 +130,10 @@ export const openMainWindow = (sender) => {
   win.maximize();
   win.on('ready-to-show', () => {
     showWin(win);
+    // 窗口准备好后，检查并同步代理状态
+    import('./proxy').then(({ checkProxyStatus }) => {
+      checkProxyStatus();
+    });
   });
   win.on('close', (e) => {
     if (beforeQuit) {

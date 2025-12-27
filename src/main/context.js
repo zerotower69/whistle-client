@@ -64,6 +64,9 @@ export const setDataUrl = (url) => {
 export const isRunning = () => _isRunning;
 export const setRunning = (running) => {
   _isRunning = running;
+  if (win && !win.isDestroyed()) {
+    win.webContents.send('whistle-status-changed', running);
+  }
 };
 
 export default {

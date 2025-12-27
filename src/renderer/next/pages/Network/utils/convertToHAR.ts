@@ -55,14 +55,23 @@ export const convertToHAR = (requests: NetworkRequest[]): Har => {
       dns: request.timing?.dnsLookup || 0,
       connect: request.timing?.initialConnection || 0,
       send: request.timing?.requestSent || 0,
-      wait: request.timing?.waiting || 0,
+      wait: request.timing?.waiting || (request.timing?.total || 0),
       receive: request.timing?.contentDownload || 0,
       ssl: request.timing?.sslHandshake || -1,
     };
 
     // Build Entry object
+    let startedDateTime = new Date().toISOString();
+    try {
+      if (request.startTime) {
+        startedDateTime = new Date(request.startTime).toISOString();
+      }
+    } catch (e) {
+      console.error('Invalid start time:', request.startTime);
+    }
+
     const entry: Entry = {
-      startedDateTime: new Date(request.startTime).toISOString(),
+      startedDateTime,
       time: request.timing?.total || 0,
       request: harRequest,
       response: harResponse,
