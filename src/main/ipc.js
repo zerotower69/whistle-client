@@ -2,7 +2,9 @@ import { ipcMain, shell } from 'electron';
 import { install, uninstall } from './plugins';
 import { openMainWindow } from './window';
 import { formatPluginName } from './util';
-import { showSettings } from './settings';
+import { showSettings, getSettings } from './settings';
+import { enableProxy, disableProxy, isEnabled } from './proxy';
+import storage from './storage';
 import ctx from './context';
 
 /**
@@ -123,7 +125,6 @@ const ipcHandlers = {
     handle: {
       'get-setting': async (event, key) => {
         try {
-          const storage = (await import('./storage')).default;
           return storage.getProperty(key);
         } catch (error) {
           console.error(`[IPC:Common] Get setting failed for ${key}:`, error);
@@ -132,11 +133,26 @@ const ipcHandlers = {
       },
       'set-setting': async (event, { key, value }) => {
         try {
-          const storage = (await import('./storage')).default;
           storage.setProperty(key, value);
           return { success: true };
         } catch (error) {
           console.error(`[IPC:Common] Set setting failed for ${key}:`, error);
+          return { success: false, error: error.message };
+        }
+      },
+      'get-proxy-status': async () => {
+        return isEnabled();
+      },
+      'toggle-proxy': async (event, enabled) => {
+        try {
+          if (enabled) {
+            await enableProxy(getSettings());
+          } else {
+            await disableProxy();
+          }
+          return { success: true };
+        } catch (error) {
+          console.error('[IPC:Proxy] Toggle proxy failed:', error);
           return { success: false, error: error.message };
         }
       },
@@ -151,6 +167,10 @@ const ipcHandlers = {
       'open-settings': () => {
         showSettings();
       },
+      'renderer-log': (event, { level, message }) => {
+        const logMethod = console[level] || console.log;
+        logMethod(`[Renderer] ${message}`);
+      },
     },
   },
 };
@@ -159,23 +179,27 @@ const ipcHandlers = {
  * 注册所有 IPC 处理器
  */
 export const registerIpcHandlers = () => {
-  console.log('Initializing IPC handlers...');
-
+  console.log('[IPC] Registering handlers...');
+  
   Object.entries(ipcHandlers).forEach(([moduleName, moduleConfig]) => {
     // 注册 handle (双向)
     if (moduleConfig.handle) {
       Object.entries(moduleConfig.handle).forEach(([channel, handler]) => {
+        try {
+          ipcMain.removeHandler(channel);
+        } catch (e) {}
         ipcMain.handle(channel, handler);
+        console.log(`[IPC] Registered handle: ${channel}`);
       });
     }
 
     // 注册 on (单向)
     if (moduleConfig.on) {
       Object.entries(moduleConfig.on).forEach(([channel, handler]) => {
+        ipcMain.removeAllListeners(channel);
         ipcMain.on(channel, handler);
+        console.log(`[IPC] Registered on: ${channel}`);
       });
     }
   });
-
-  console.log('IPC handlers registered successfully.');
 };

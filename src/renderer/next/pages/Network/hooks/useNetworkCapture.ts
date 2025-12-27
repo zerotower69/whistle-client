@@ -80,18 +80,59 @@ export const useNetworkCapture = () => {
 
   // Start mock data generation
   useEffect(() => {
+    // Mock data generation is disabled to avoid confusion with real data.
+    // To re-enable for testing, uncomment the block below.
+    /*
     if (!isPaused) {
       intervalRef.current = setInterval(() => {
         requestIdCounter.current++;
         const newRequest = generateMockRequest(requestIdCounter.current);
         setRequests((prev) => [...prev, newRequest]);
+        console.log(`[Network] Mock Request: ${newRequest.method} ${newRequest.url}`);
       }, 2000);
     }
+    */
 
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
+    };
+  }, [isPaused]);
+
+  // Listen for real network sessions from Electron
+  useEffect(() => {
+    const { ipcRenderer } = window.require('electron');
+
+    const handleSession = (_event: any, data: any) => {
+      if (isPaused) return;
+
+      if (data.type === 'session') {
+        setRequests((prev) => [...prev, data.session]);
+      } else if (data.type === 'session-update') {
+        setRequests((prev) =>
+          prev.map((req) => {
+            if (req.id === data.id) {
+              // Handle nested updates (like timing.total)
+              const updatedReq = { ...req, ...data.update };
+              if (data.update['timing.total'] !== undefined) {
+                updatedReq.timing = {
+                  ...req.timing,
+                  total: data.update['timing.total'],
+                };
+                delete (updatedReq as any)['timing.total'];
+              }
+              return updatedReq;
+            }
+            return req;
+          }),
+        );
+      }
+    };
+
+    ipcRenderer.on('network-session', handleSession);
+    return () => {
+      ipcRenderer.removeListener('network-session', handleSession);
     };
   }, [isPaused]);
 

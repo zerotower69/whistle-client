@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Form, Input, Button, Checkbox, Select, Space, message, Typography } from 'antd';
+import { Form, Input, Button, Checkbox, Select, Space, Typography, theme, App } from 'antd';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -15,10 +15,11 @@ interface SettingsFormValues {
   maxHttpHeaderSize: number;
 }
 
-const App: React.FC = () => {
+const Settings: React.FC = () => {
   const [form] = Form.useForm<SettingsFormValues>();
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [messageApi, contextHolder] = message.useMessage();
+  const { message: messageApi } = App.useApp();
+  const { token } = theme.useToken();
   const portInputRef = useRef<any>(null);
 
   useEffect(() => {
@@ -140,151 +141,158 @@ const App: React.FC = () => {
   return (
     <div
       style={{
-        width: '460px',
-        margin: '0 auto',
-        paddingTop: '20px',
+        width: '100%',
         height: '100vh',
         display: 'flex',
         flexDirection: 'column',
+        background: token.colorBgContainer,
+        color: token.colorText,
       }}
     >
-      {contextHolder}
-      <Form
-        form={form}
-        layout="horizontal"
-        onFinish={handleSubmit}
-        initialValues={{
-          port: '8888',
-          maxHttpHeaderSize: 256,
-          useDefaultStorage: false,
+      <div
+        style={{
+          flex: 1,
+          overflow: 'auto',
+          padding: '20px 24px 0',
         }}
-        style={{ flex: 1, overflow: 'auto', paddingRight: '20px' }}
       >
-        <Form.Item
-          label={<span style={{ fontWeight: 'bold' }}>Proxy Port</span>}
-          name="port"
-          rules={[{ required: true, message: 'Please input the proxy port!' }]}
-          labelCol={{ span: 7 }}
-          wrapperCol={{ span: 17 }}
+        <Form
+          form={form}
+          layout="horizontal"
+          onFinish={handleSubmit}
+          initialValues={{
+            port: '8888',
+            maxHttpHeaderSize: 256,
+            useDefaultStorage: false,
+          }}
         >
-          <Input ref={portInputRef} id="port" type="number" placeholder="8888" maxLength={5} />
-        </Form.Item>
-
-        {showAdvanced && (
-          <>
-            <Form.Item
-              label={<span style={{ fontWeight: 'bold' }}>Socks Port</span>}
-              name="socksPort"
-              labelCol={{ span: 7 }}
-              wrapperCol={{ span: 17 }}
-            >
-              <Input
-                id="socksPort"
-                type="number"
-                placeholder="Start a socksv5 proxy listening on given port"
-                maxLength={5}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={<span style={{ fontWeight: 'bold' }}>Bound Host</span>}
-              name="host"
-              labelCol={{ span: 7 }}
-              wrapperCol={{ span: 17 }}
-            >
-              <Input
-                id="host"
-                placeholder="Bound given IP address or Domain for the proxy"
-                maxLength={255}
-              />
-            </Form.Item>
-
-            <Form.Item
-              label={<span style={{ fontWeight: 'bold' }}>Proxy Auth</span>}
-              labelCol={{ span: 7 }}
-              wrapperCol={{ span: 17 }}
-            >
-              <Space.Compact style={{ width: '100%' }}>
-                <Form.Item name="username" noStyle>
-                  <Input
-                    id="username"
-                    placeholder="Username"
-                    maxLength={16}
-                    style={{ width: '48%' }}
-                  />
-                </Form.Item>
-                <span style={{ display: 'inline-block', width: '4%', textAlign: 'center' }}>:</span>
-                <Form.Item name="password" noStyle>
-                  <Input
-                    id="password"
-                    placeholder="Password"
-                    maxLength={16}
-                    style={{ width: '48%' }}
-                  />
-                </Form.Item>
-              </Space.Compact>
-            </Form.Item>
-          </>
-        )}
-
-        {!showAdvanced && (
-          <Form.Item wrapperCol={{ offset: 7, span: 17 }}>
-            <Button type="link" onClick={() => setShowAdvanced(true)} style={{ paddingLeft: 0 }}>
-              Show Advanced &gt;&gt;
-            </Button>
+          <Form.Item
+            label={<span style={{ fontWeight: 'bold' }}>Proxy Port</span>}
+            name="port"
+            rules={[{ required: true, message: 'Please input the proxy port!' }]}
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+          >
+            <Input ref={portInputRef} id="port" type="number" placeholder="8888" maxLength={5} />
           </Form.Item>
-        )}
 
-        <Form.Item
-          label={<span style={{ fontWeight: 'bold' }}>Bypass List</span>}
-          name="bypass"
-          labelCol={{ span: 7 }}
-          wrapperCol={{ span: 17 }}
-        >
-          <TextArea
-            id="bypass"
-            placeholder="Servers for which you do not want to use any proxy (separated by spaces)"
-            maxLength={2000}
-            rows={showAdvanced ? 4 : 8}
-          />
-        </Form.Item>
+          {showAdvanced && (
+            <>
+              <Form.Item
+                label={<span style={{ fontWeight: 'bold' }}>Socks Port</span>}
+                name="socksPort"
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+              >
+                <Input
+                  id="socksPort"
+                  type="number"
+                  placeholder="Start a socksv5 proxy"
+                  maxLength={5}
+                />
+              </Form.Item>
 
-        <Form.Item
-          name="useDefaultStorage"
-          valuePropName="checked"
-          wrapperCol={{ offset: 7, span: 17 }}
-        >
-          <Checkbox>
-            <Text>Use whistle's default storage directory</Text>
-          </Checkbox>
-        </Form.Item>
+              <Form.Item
+                label={<span style={{ fontWeight: 'bold' }}>Bound Host</span>}
+                name="host"
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+              >
+                <Input
+                  id="host"
+                  placeholder="Bound IP or Domain"
+                  maxLength={255}
+                />
+              </Form.Item>
 
-        <Form.Item
-          label="--max-http-header-size="
-          name="maxHttpHeaderSize"
-          labelCol={{ span: 7 }}
-          wrapperCol={{ span: 17 }}
-        >
-          <Select
-            id="maxHttpHeaderSize"
-            options={[
-              { value: 256, label: '256k' },
-              { value: 512, label: '512k' },
-              { value: 1024, label: '1m' },
-              { value: 5120, label: '5m' },
-              { value: 10240, label: '10m' },
-              { value: 51200, label: '50m' },
-              { value: 102400, label: '100m' },
-            ]}
-          />
-        </Form.Item>
-      </Form>
+              <Form.Item
+                label={<span style={{ fontWeight: 'bold' }}>Proxy Auth</span>}
+                labelCol={{ span: 8 }}
+                wrapperCol={{ span: 16 }}
+              >
+                <Space.Compact style={{ width: '100%' }}>
+                  <Form.Item name="username" noStyle>
+                    <Input
+                      id="username"
+                      placeholder="User"
+                      maxLength={16}
+                      style={{ width: '48%' }}
+                    />
+                  </Form.Item>
+                  <span style={{ display: 'inline-block', width: '4%', textAlign: 'center' }}>:</span>
+                  <Form.Item name="password" noStyle>
+                    <Input
+                      id="password"
+                      placeholder="Pass"
+                      maxLength={16}
+                      style={{ width: '48%' }}
+                    />
+                  </Form.Item>
+                </Space.Compact>
+              </Form.Item>
+            </>
+          )}
+
+          {!showAdvanced && (
+            <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+              <Button type="link" onClick={() => setShowAdvanced(true)} style={{ paddingLeft: 0 }}>
+                Show Advanced &gt;&gt;
+              </Button>
+            </Form.Item>
+          )}
+
+          <Form.Item
+            label={<span style={{ fontWeight: 'bold' }}>Bypass List</span>}
+            name="bypass"
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+          >
+            <TextArea
+              id="bypass"
+              placeholder="Servers for which you do not want to use any proxy (separated by spaces)"
+              maxLength={2000}
+              rows={showAdvanced ? 3 : 6}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="useDefaultStorage"
+            valuePropName="checked"
+            wrapperCol={{ offset: 8, span: 16 }}
+          >
+            <Checkbox>
+              <Text>Use whistle's default storage directory</Text>
+            </Checkbox>
+          </Form.Item>
+
+          <Form.Item
+            label="Max Header Size"
+            name="maxHttpHeaderSize"
+            labelCol={{ span: 8 }}
+            wrapperCol={{ span: 16 }}
+          >
+            <Select
+              id="maxHttpHeaderSize"
+              options={[
+                { value: 256, label: '256k' },
+                { value: 512, label: '512k' },
+                { value: 1024, label: '1m' },
+                { value: 5120, label: '5m' },
+                { value: 10240, label: '10m' },
+                { value: 51200, label: '50m' },
+                { value: 102400, label: '100m' },
+              ]}
+            />
+          </Form.Item>
+        </Form>
+      </div>
 
       <div
         style={{
-          borderTop: '1px solid #d9d9d9',
-          padding: '10px 20px',
+          borderTop: `1px solid ${token.colorBorderSecondary}`,
+          padding: '12px 24px',
           textAlign: 'right',
+          background: token.colorBgContainer,
         }}
       >
         <Space>
@@ -298,4 +306,4 @@ const App: React.FC = () => {
   );
 };
 
-export default App;
+export default Settings;

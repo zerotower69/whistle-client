@@ -179,6 +179,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
         }}
         okText="创建"
         cancelText="取消"
+        forceRender
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item label="类型">
@@ -227,6 +228,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
         }}
         okText="确定"
         cancelText="取消"
+        forceRender
       >
         <Form form={renameForm} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { Layout, Menu, Switch, Button, Breadcrumb, Typography, theme } from 'antd';
+import { Layout, Menu, Switch, Button, Breadcrumb, Typography, theme, App } from 'antd';
 import LogViewer from '../components/LogViewer';
 import {
   GlobalOutlined,
@@ -28,6 +28,7 @@ const MainLayout: React.FC = () => {
   const [proxyEnabled, setProxyEnabled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { message } = App.useApp();
 
   // 加载上次选中的 Tab 和主题
   React.useEffect(() => {
@@ -47,6 +48,10 @@ const MainLayout: React.FC = () => {
         // 加载主题
         const savedTheme = await ipcRenderer.invoke('get-setting', 'theme-mode');
         setIsDarkMode(savedTheme === 'dark');
+
+        // 加载代理状态
+        const status = await ipcRenderer.invoke('get-proxy-status');
+        setProxyEnabled(!!status);
       } catch (error) {
         console.error('Failed to load settings:', error);
       }
@@ -132,14 +137,21 @@ const MainLayout: React.FC = () => {
   };
 
   // 切换代理开关
-  const handleProxyToggle = (checked: boolean) => {
+  const handleProxyToggle = async (checked: boolean) => {
     setProxyEnabled(checked);
-    // TODO: 调用 Electron IPC 来实际切换代理
     try {
       const { ipcRenderer } = window.require('electron');
-      ipcRenderer.send('toggle-proxy', checked);
-    } catch (error) {
+      const result = await ipcRenderer.invoke('toggle-proxy', checked);
+      if (result.success) {
+        message.success(checked ? '系统代理已开启' : '系统代理已关闭');
+      } else {
+        message.error(`切换代理失败: ${result.error}`);
+        setProxyEnabled(!checked); // 恢复状态
+      }
+    } catch (error: any) {
       console.error('Failed to toggle proxy:', error);
+      message.error(`切换代理出错: ${error.message}`);
+      setProxyEnabled(!checked); // 恢复状态
     }
   };
 

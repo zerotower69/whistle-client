@@ -1,22 +1,21 @@
 /**
  * Formatting utilities
  */
+import byteSize from 'byte-size';
 
 /**
  * Format file size to human-readable format
  */
-export const formatFileSize = (bytes: number): string => {
-  if (bytes === 0) return '0 B';
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(2)} GB`;
+export const formatFileSize = (bytes: number | undefined | null): string => {
+  if (bytes === undefined || bytes === null || isNaN(bytes)) return '0 B';
+  return byteSize(bytes).toString();
 };
 
 /**
  * Format time duration to human-readable format
  */
-export const formatTime = (milliseconds: number): string => {
+export const formatTime = (milliseconds: number | undefined | null): string => {
+  if (milliseconds === undefined || milliseconds === null || isNaN(milliseconds)) return '0 ms';
   if (milliseconds < 1000) return `${milliseconds.toFixed(0)} ms`;
   if (milliseconds < 60000) return `${(milliseconds / 1000).toFixed(2)} s`;
   return `${(milliseconds / 60000).toFixed(2)} min`;
@@ -36,25 +35,23 @@ export const formatDateTime = (timestamp: number): string => {
 export const getFileNameFromUrl = (url: string): string => {
   try {
     const urlObj = new URL(url);
-    let pathname = urlObj.pathname;
-    
-    // Remove trailing slash
-    if (pathname.endsWith('/') && pathname.length > 1) {
-      pathname = pathname.slice(0, -1);
-    }
-    
+    const pathname = urlObj.pathname;
     const segments = pathname.split('/').filter(Boolean);
-    const filename = segments[segments.length - 1];
-    
-    if (!filename) {
+
+    if (segments.length === 0) {
       return urlObj.hostname;
     }
-    
-    // If filename is a number (likely an ID), try to include the previous segment for context
-    if (/^\d+$/.test(filename) && segments.length > 1) {
-      return `${segments[segments.length - 2]}/${filename}`;
+
+    const filename = segments[segments.length - 1];
+
+    // 如果文件名是纯数字（通常是 ID），则包含上一级路径或域名以提供更多上下文
+    if (/^\d+$/.test(filename)) {
+      if (segments.length > 1) {
+        return `${segments[segments.length - 2]}/${filename}`;
+      }
+      return `${urlObj.hostname}/${filename}`;
     }
-    
+
     return filename;
   } catch {
     return url;

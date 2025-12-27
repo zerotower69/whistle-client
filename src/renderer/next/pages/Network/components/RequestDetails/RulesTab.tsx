@@ -1,6 +1,8 @@
 import React from 'react';
-import { Empty, List, Tag } from 'antd';
+import { Empty, Tag, Flex, Typography } from 'antd';
 import type { NetworkRequest } from '../../types';
+
+const { Text } = Typography;
 
 interface RulesTabProps {
   request: NetworkRequest | null;
@@ -20,14 +22,14 @@ const RulesTab: React.FC<RulesTabProps> = ({ request }) => {
 
   return (
     <div style={{ padding: 16 }}>
-      <List
-        dataSource={request.rules}
-        renderItem={(rule, index) => (
-          <List.Item>
-            <List.Item.Meta avatar={<Tag color="blue">#{index + 1}</Tag>} description={rule} />
-          </List.Item>
-        )}
-      />
+      <Flex vertical gap="small">
+        {request.rules.map((rule, index) => (
+          <Flex key={index} align="start" gap="small" style={{ marginBottom: 8 }}>
+            <Tag color="blue" style={{ marginTop: 2 }}>#{index + 1}</Tag>
+            <Text style={{ flex: 1, wordBreak: 'break-all' }}>{rule}</Text>
+          </Flex>
+        ))}
+      </Flex>
     </div>
   );
 };

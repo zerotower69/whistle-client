@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { ConfigProvider, theme } from 'antd';
-import App from './App';
+import { ConfigProvider, theme, App as AntdApp } from 'antd';
+import Settings from './App';
 import './index.css';
 
 class ErrorBoundary extends React.Component<
@@ -39,7 +39,19 @@ class ErrorBoundary extends React.Component<
 document.body.style.overscrollBehaviorX = 'none';
 
 // Detect system theme
-const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+const getInitialTheme = () => {
+  try {
+    const { ipcRenderer } = window.require('electron');
+    // Note: This is a synchronous-ish way to get settings if we had a sync IPC, 
+    // but since we don't, we'll start with system theme and let App handle it if needed,
+    // or just stick to system theme for this small modal.
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  } catch {
+    return false;
+  }
+};
+
+const isDarkMode = getInitialTheme();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -49,7 +61,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
         }}
       >
-        <App />
+        <AntdApp>
+          <Settings />
+        </AntdApp>
       </ConfigProvider>
     </ErrorBoundary>
   </React.StrictMode>,

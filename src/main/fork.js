@@ -1,4 +1,4 @@
-import { utilityProcess, app, screen } from 'electron';
+import { utilityProcess, app } from 'electron';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
@@ -55,9 +55,6 @@ const forkWhistle = (isRestart) => {
   let options;
   const settings = getSettings();
   const isDev = !app.isPackaged;
-  if (isDev) {
-    settings.port = 8899;
-  }
   const execArgv = ['--max-semi-space-size=64', '--tls-min-v1.0'];
   execArgv.push(`--max-http-header-size=${settings.maxHttpHeaderSize * 1024}`);
   const args = [encodeURIComponent(JSON.stringify(settings))];
@@ -97,6 +94,22 @@ const forkWhistle = (isRestart) => {
     }
     if (type === 'install') {
       return install(data.plugins);
+    }
+    if (type === 'log') {
+      const level = data.level || 'info';
+      if (typeof console[level] === 'function') {
+        console[level](data.message);
+      } else {
+        console.log(data.message);
+      }
+      return;
+    }
+    if (type === 'session' || type === 'session-update') {
+      const win = getWin();
+      if (win) {
+        win.webContents.send('network-session', data);
+      }
+      return;
     }
     if (type === 'plugins') {
       const win = getWin();

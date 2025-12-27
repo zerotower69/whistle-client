@@ -22,19 +22,30 @@ const LogViewer: React.FC = () => {
   useEffect(() => {
     const { ipcRenderer } = window.require('electron');
     const loadSettings = async () => {
-      const savedVisible = await ipcRenderer.invoke('get-setting', 'log-viewer-visible');
-      const savedMinimized = await ipcRenderer.invoke('get-setting', 'log-viewer-minimized');
-      const savedFilter = await ipcRenderer.invoke('get-setting', 'log-viewer-filter');
+      console.log('[LogViewer] Loading settings...');
+      const [savedVisible, savedMinimized, savedFilter] = await Promise.all([
+        ipcRenderer.invoke('get-setting', 'log-viewer-visible'),
+        ipcRenderer.invoke('get-setting', 'log-viewer-minimized'),
+        ipcRenderer.invoke('get-setting', 'log-viewer-filter'),
+      ]);
+
+      console.log('[LogViewer] Settings loaded:', { savedVisible, savedMinimized, savedFilter });
 
       if (savedVisible !== null) setVisible(!!savedVisible);
       if (savedMinimized !== null) setMinimized(!!savedMinimized);
       if (savedFilter !== null) setFilter(String(savedFilter));
-      isInitialized.current = true;
+      
+      // 延迟设置初始化完成标志，确保状态更新已生效
+      setTimeout(() => {
+        isInitialized.current = true;
+        console.log('[LogViewer] Initialization complete');
+      }, 0);
     };
     loadSettings();
 
     // 监听全局显示事件
     const handleToggle = () => {
+      console.log('[LogViewer] Received toggle-log-viewer event');
       setVisible(true);
       setMinimized(false);
       setUnreadCount(0);
@@ -46,18 +57,21 @@ const LogViewer: React.FC = () => {
   // 状态变更时保存
   useEffect(() => {
     if (!isInitialized.current) return;
+    console.log('[LogViewer] Saving visible state:', visible);
     const { ipcRenderer } = window.require('electron');
     ipcRenderer.invoke('set-setting', { key: 'log-viewer-visible', value: visible });
   }, [visible]);
 
   useEffect(() => {
     if (!isInitialized.current) return;
+    console.log('[LogViewer] Saving minimized state:', minimized);
     const { ipcRenderer } = window.require('electron');
     ipcRenderer.invoke('set-setting', { key: 'log-viewer-minimized', value: minimized });
   }, [minimized]);
 
   useEffect(() => {
     if (!isInitialized.current) return;
+    console.log('[LogViewer] Saving filter state:', filter);
     const { ipcRenderer } = window.require('electron');
     ipcRenderer.invoke('set-setting', { key: 'log-viewer-filter', value: filter });
   }, [filter]);
@@ -91,13 +105,24 @@ const LogViewer: React.FC = () => {
       const fitAddon = new FitAddon();
       term.loadAddon(fitAddon);
       term.open(terminalRef.current);
-      fitAddon.fit();
+      
+      try {
+        fitAddon.fit();
+      } catch (e) {
+        console.warn('[LogViewer] Initial fit failed:', e);
+      }
 
       xtermRef.current = term;
       fitAddonRef.current = fitAddon;
 
       // 监听窗口大小变化
-      const handleResize = () => fitAddon.fit();
+      const handleResize = () => {
+        try {
+          fitAddon.fit();
+        } catch (e) {
+          // Ignore resize errors
+        }
+      };
       window.addEventListener('resize', handleResize);
 
       return () => {
@@ -105,7 +130,13 @@ const LogViewer: React.FC = () => {
       };
     } else {
       // 重新调整大小
-      setTimeout(() => fitAddonRef.current?.fit(), 100);
+      setTimeout(() => {
+        try {
+          fitAddonRef.current?.fit();
+        } catch (e) {
+          // Ignore
+        }
+      }, 100);
     }
   }, [visible, minimized]);
 
@@ -227,7 +258,8 @@ const LogViewer: React.FC = () => {
               value={filter}
               onChange={setFilter}
               style={{ width: 100 }}
-              dropdownMatchSelectWidth={false}
+              popupMatchSelectWidth={false}
+              styles={{ popup: { root: { zIndex: 10001 } } }}
             >
               <Option value="all">全部级别</Option>
               <Option value="info">Info</Option>

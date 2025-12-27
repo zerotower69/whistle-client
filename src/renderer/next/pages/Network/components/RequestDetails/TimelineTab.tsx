@@ -11,8 +11,8 @@ interface TimelineTabProps {
  * Timeline tab showing request timing visualization
  */
 const TimelineTab: React.FC<TimelineTabProps> = ({ request }) => {
-  if (!request) {
-    return <Empty description="请选择一个请求" />;
+  if (!request || !request.timing) {
+    return <Empty description="无时间轴数据" />;
   }
 
   const { timing } = request;

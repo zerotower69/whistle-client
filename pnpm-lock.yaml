@@ -23,6 +23,9 @@ importers:
       antd:
         specifier: ^6.0.0
         version: 6.1.2(date-fns@2.30.0)(moment@2.30.1)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      byte-size:
+        specifier: ^9.0.1
+        version: 9.0.1
       electron-context-menu:
         specifier: ^3.6.1
         version: 3.6.1
@@ -35,6 +38,9 @@ importers:
       fs-extra:
         specifier: ^11.1.1
         version: 11.3.3
+      mine-type:
+        specifier: ^1.0.0
+        version: 1.0.0
       monaco-editor:
         specifier: ^0.55.1
         version: 0.55.1
@@ -1570,6 +1576,15 @@ packages:
   builtins@1.0.3:
     resolution: {integrity: sha512-uYBjakWipfaO/bXI7E8rq6kpwHRZK5cNYrUv2OzZSI/FvmdMyXJ2tG9dKcjEC5YHmHpUAwsargWIZNWdxb/bnQ==}
 
+  byte-size@9.0.1:
+    resolution: {integrity: sha512-YLe9x3rabBrcI0cueCdLS2l5ONUKywcRpTs02B8KP9/Cimhj7o3ZccGrPnRvcbyHMbb7W79/3MUJl7iGgTXKEw==}
+    engines: {node: '>=12.17'}
+    peerDependencies:
+      '@75lb/nature': latest
+    peerDependenciesMeta:
+      '@75lb/nature':
+        optional: true
+
   bytes@3.1.2:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
@@ -2971,6 +2986,10 @@ packages:
   mimic-response@3.1.0:
     resolution: {integrity: sha512-z0yWI+4FDrrweS8Zmt4Ej5HdJmky15+L2e6Wgn3+iK5fWzb6T3fhNFq2+MeTRb064c6Wr4N/wv0DzQTjNzHNGQ==}
     engines: {node: '>=10'}
+
+  mine-type@1.0.0:
+    resolution: {integrity: sha512-BK4ME6PN3bhVH9SNiYnhVWBlrMxd8nVH9C/RNtfd9hBckGwDtDN6bREO6pC91KfYT0Bu9ZWlHIyTfwRFVCAlyA==}
+    engines: {node: '>= 0.6'}
 
   minimatch@3.1.2:
     resolution: {integrity: sha512-J7p63hRiAjw1NDEww1W7i37+ByIrOWO5XQQAzZ3VOcL0PNybwpfmV/N05zFAzwQ9USyEcX6t3UO+K5aqBQOIHw==}
@@ -6137,6 +6156,8 @@ snapshots:
 
   builtins@1.0.3: {}
 
+  byte-size@9.0.1: {}
+
   bytes@3.1.2: {}
 
   cac@6.7.14: {}
@@ -7781,6 +7802,8 @@ snapshots:
   mimic-response@1.0.1: {}
 
   mimic-response@3.1.0: {}
+
+  mine-type@1.0.0: {}
 
   minimatch@3.1.2:
     dependencies:

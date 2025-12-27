@@ -2,7 +2,7 @@
   position: fixed;
   right: 24px;
   bottom: 24px;
-  z-index: 9999;
+  z-index: 900;
 }
 
 .log-viewer-container {
@@ -16,7 +16,7 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
   display: flex;
   flex-direction: column;
-  z-index: 10000;
+  z-index: 950;
   overflow: hidden;
   border: 1px solid #333;
   transition: all 0.3s ease;

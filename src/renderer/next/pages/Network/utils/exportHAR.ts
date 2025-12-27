@@ -77,7 +77,7 @@ export const exportToHAR = (requests: NetworkRequest[]): string => {
       headers: headersToArray(request.responseHeaders),
       content: {
         size: request.responseSize,
-        mimeType: request.responseHeaders['content-type'] || 'text/plain',
+        mimeType: (request.responseHeaders && request.responseHeaders['content-type']) || 'text/plain',
         text: request.responseBody,
       },
       bodySize: request.responseSize,

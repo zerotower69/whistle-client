@@ -79,17 +79,19 @@ const RequestTable: React.FC<RequestTableProps> = ({ requests, selectedId, onSel
     },
     {
       title: 'Size',
-      dataIndex: 'totalSize',
       key: 'size',
       width: 100,
-      render: (size: number) => formatFileSize(size),
+      render: (_, record) => {
+        const size = record.totalSize || (record.requestSize || 0) + (record.responseSize || 0);
+        return formatFileSize(size);
+      },
     },
     {
       title: 'Time',
       dataIndex: 'timing',
       key: 'time',
       width: 100,
-      render: (timing) => formatTime(timing.total),
+      render: (timing) => formatTime(timing?.total),
     },
     {
       title: 'Waterfall',

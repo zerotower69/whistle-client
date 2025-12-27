@@ -4,25 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import net from 'net';
 import { fileURLToPath } from 'url';
-
-const logFile = path.join(process.cwd(), 'whistle-child-debug.log');
-const log = (msg) => {
-  try {
-    fs.appendFileSync(logFile, `[${new Date().toISOString()}] ${msg}\n`);
-  } catch (e) {
-    console.error(e);
-  }
-};
-
-log('Whistle process initializing...');
-
 import whistle from 'whistle';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-log('Whistle module loaded successfully');
-
 import {
   PROC_PATH,
   BASE_DIR,
@@ -32,7 +14,24 @@ import {
   requireW2,
 } from './util';
 
-log(`Imports loaded. PROC_PATH: ${PROC_PATH}`);
+const sendMsg = (data) => {
+  process.parentPort.postMessage(data);
+};
+
+sendMsg({
+  type: 'log',
+  level: 'info',
+  message: 'Whistle process initializing...',
+});
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+sendMsg({
+  type: 'log',
+  level: 'info',
+  message: 'Whistle module loaded successfully',
+});
 
 const { getBypass } = requireW2('set-global-proxy');
 const PROJECT_PLUGINS_PATH = path.join(__dirname, '../node_modules');
@@ -49,13 +48,8 @@ const isCIDR = (host) => {
   return net.isIP(host[1]);
 };
 
-const sendMsg = (data) => {
-  process.parentPort.postMessage(data);
-};
-
 process.on('uncaughtException', (err) => {
   const msg = `Uncaught Exception: ${err.message}\n${err.stack}`;
-  log(msg);
   sendMsg({
     type: 'error',
     message: msg,
@@ -65,7 +59,6 @@ process.on('uncaughtException', (err) => {
 
 process.on('unhandledRejection', (reason) => {
   const msg = `Unhandled Rejection: ${reason}`;
-  log(msg);
   sendMsg({
     type: 'error',
     message: msg,
@@ -164,8 +157,11 @@ const proxy = whistle(
     },
   },
   () => {
-    log(`Whistle started successfully on port ${baseOptions.port}`);
-    console.log('Whistle started successfully on port', baseOptions.port);
+    sendMsg({
+      type: 'log',
+      level: 'info',
+      message: `Whistle started successfully on port ${baseOptions.port}`,
+    });
     sendMsg({
       type: 'options',
       options: {
@@ -215,6 +211,149 @@ const proxy = whistle(
       });
     });
     proxy.on('rulesDataChange', updateImediately);
+
+    // 监听请求日志并发送给主进程
+    proxy.on('request', (reqEmitter, data) => {
+      if (!data || !data.req) return;
+
+      const method = data.req.method || 'UNKNOWN';
+      const fullUrl = data.url || 'UNKNOWN';
+      const id = data.id || `${Date.now()}-${Math.random()}`;
+      
+      const reqHeaders = data.req.headers || {};
+      const initialReqSize = parseInt(reqHeaders['content-length'], 10) || 0;
+
+      sendMsg({
+        type: 'log',
+        level: 'info',
+        message: `[Network] ${method} ${fullUrl}`,
+      });
+
+      // 发送初步会话信息
+      sendMsg({
+        type: 'session',
+        session: {
+          id: id,
+          url: fullUrl,
+          method: method,
+          protocol: data.req.httpVersion ? `HTTP/${data.req.httpVersion}` : 'HTTP/1.1',
+          startTime: data.startTime || Date.now(),
+          requestHeaders: reqHeaders,
+          requestSize: initialReqSize,
+          responseSize: 0,
+          totalSize: initialReqSize,
+          type: 'other',
+          timing: {
+            queueing: 0,
+            dnsLookup: 0,
+            initialConnection: 0,
+            sslHandshake: 0,
+            requestSent: 0,
+            waiting: 0,
+            contentDownload: 0,
+            total: 0,
+          },
+        },
+      });
+
+      let resHeaders = {};
+      let currentReqSize = initialReqSize;
+      let currentResSize = 0;
+
+      // 监听响应
+      reqEmitter.on('response', (data) => {
+        if (!data || !data.res) return;
+
+        const statusCode = data.res.statusCode || 0;
+        resHeaders = data.res.headers || {};
+        currentResSize = parseInt(resHeaders['content-length'], 10) || 0;
+        
+        sendMsg({
+          type: 'log',
+          level: 'info',
+          message: `[Network] ${method} ${fullUrl} (${statusCode})`,
+        });
+
+        // 识别资源类型
+        const contentType = (resHeaders['content-type'] || '').toLowerCase();
+        let type = 'other';
+        if (contentType.includes('text/html')) type = 'document';
+        else if (contentType.includes('text/css')) type = 'stylesheet';
+        else if (contentType.includes('javascript')) type = 'script';
+        else if (contentType.includes('image/')) type = 'image';
+        else if (contentType.includes('font/')) type = 'font';
+        else if (contentType.includes('json') || contentType.includes('xml')) type = 'fetch';
+
+        // 发送更新后的会话信息
+        sendMsg({
+          type: 'session-update',
+          id: id,
+          update: {
+            statusCode: statusCode,
+            statusText: data.res.statusMessage || '',
+            responseHeaders: resHeaders,
+            responseSize: currentResSize,
+            totalSize: currentReqSize + currentResSize,
+            type: type,
+            endTime: data.endTime || Date.now(),
+            'timing.total': (data.endTime || Date.now()) - (data.startTime || Date.now()),
+          },
+        });
+      });
+
+      // 监听请求体
+      reqEmitter.on('reqBody', (body) => {
+        if (!body) return;
+        currentReqSize = body.length;
+        const contentType = (reqHeaders['content-type'] || '').toLowerCase();
+        const isBinary = /image|video|audio|zip|pdf|octet-stream/.test(contentType);
+        
+        sendMsg({
+          type: 'session-update',
+          id: id,
+          update: {
+            requestBody: isBinary ? body.toString('base64') : body.toString(),
+            requestSize: currentReqSize,
+            totalSize: currentReqSize + currentResSize,
+          },
+        });
+      });
+
+      // 监听响应体
+      reqEmitter.on('resBody', (body) => {
+        if (!body) return;
+        currentResSize = body.length;
+        const contentType = (resHeaders['content-type'] || '').toLowerCase();
+        const isBinary = /image|video|audio|zip|pdf|octet-stream/.test(contentType);
+
+        sendMsg({
+          type: 'session-update',
+          id: id,
+          update: {
+            responseBody: isBinary ? body.toString('base64') : body.toString(),
+            responseSize: currentResSize,
+            totalSize: currentReqSize + currentResSize,
+          },
+        });
+      });
+
+      // 监听错误
+      reqEmitter.on('error', (err) => {
+        sendMsg({
+          type: 'log',
+          level: 'error',
+          message: `[Network Error] ${method} ${fullUrl}: ${err.message}`,
+        });
+      });
+    });
+
+    proxy.on('error', (err) => {
+      sendMsg({
+        type: 'log',
+        level: 'error',
+        message: `[Whistle Error] ${err.message}`,
+      });
+    });
   },
 );
 

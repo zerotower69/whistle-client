@@ -4,7 +4,7 @@ import { useWhistleSync } from '../../hooks/useWhistleSync';
 import {
   Card,
   Button,
-  List,
+  Flex,
   Input,
   Space,
   Divider,
@@ -499,7 +499,7 @@ const Plugins: React.FC = () => {
                       fontWeight: 'bold',
                       fontSize: 24,
                     }}
-                    dropdownMatchSelectWidth={false}
+                    popupMatchSelectWidth={false}
                   >
                     {DEFAULT_REGISTRIES.map((reg) => (
                       <Option key={reg.value} value={reg.value}>
@@ -546,12 +546,12 @@ const Plugins: React.FC = () => {
               </Button>
             </Empty>
           ) : (
-            <List
-              itemLayout="vertical"
-              dataSource={installedPlugins}
-              renderItem={(plugin) => (
-                <List.Item
+            <Flex vertical gap="middle">
+              {installedPlugins.map((plugin) => (
+                <Card
+                  key={plugin.name}
                   className="plugin-card"
+                  size="small"
                   actions={[
                     <Switch
                       key="toggle"
@@ -597,11 +597,13 @@ const Plugins: React.FC = () => {
                     </Popconfirm>,
                   ]}
                 >
-                  <List.Item.Meta
-                    title={
-                      <div className="plugin-header">
-                        <Space>
-                          <Text strong>{plugin.name}</Text>
+                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                        <Text strong style={{ fontSize: 16, marginRight: 8 }}>
+                          {plugin.name}
+                        </Text>
+                        <Space size={4}>
                           {plugin.enabled ? (
                             <Tag color="success" icon={<CheckCircleOutlined />}>
                               已启用
@@ -617,14 +619,12 @@ const Plugins: React.FC = () => {
                             )}
                         </Space>
                       </div>
-                    }
-                    description={
                       <div>
                         <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 8 }}>
                           {plugin.description || '暂无描述'}
                         </Paragraph>
                         <div className="plugin-meta">
-                          <Space split={<Divider type="vertical" />}>
+                          <Space separator={<Divider type="vertical" />}>
                             <Text type="secondary">版本: {plugin.installedVersion}</Text>
                             {plugin.latestVersion &&
                               plugin.latestVersion !== plugin.installedVersion && (
@@ -638,19 +638,30 @@ const Plugins: React.FC = () => {
                         </div>
                         {plugin.keywords && (
                           <div style={{ marginTop: 8 }}>
-                            {plugin.keywords.map((keyword) => (
-                              <Tag key={keyword} color="processing">
-                                {keyword}
-                              </Tag>
-                            ))}
+                            <Space size={[0, 4]} wrap>
+                              {plugin.keywords.map((keyword: string) => (
+                                <Tag key={keyword} style={{ fontSize: '11px' }}>
+                                  {keyword}
+                                </Tag>
+                              ))}
+                            </Space>
                           </div>
                         )}
                       </div>
-                    }
-                  />
-                </List.Item>
-              )}
-            />
+                    </div>
+                    {plugin.homepage && (
+                      <Tooltip title="查看主页">
+                        <Button
+                          type="text"
+                          icon={<GlobalOutlined />}
+                          onClick={() => window.open(plugin.homepage)}
+                        />
+                      </Tooltip>
+                    )}
+                  </div>
+                </Card>
+              ))}
+            </Flex>
           )}
         </Card>
 
@@ -661,6 +672,7 @@ const Plugins: React.FC = () => {
           onCancel={() => setInstallModal(false)}
           footer={null}
           width={600}
+          forceRender
         >
           <Alert
             message="安装提示"
@@ -757,9 +769,8 @@ whistle.vase`}
           </div>
           <div style={{ maxHeight: 450, overflowY: 'auto', padding: '8px 0' }}>
             {searchResults.length > 0 ? (
-              <List
-                dataSource={searchResults}
-                renderItem={(plugin) => (
+              <Flex vertical>
+                {searchResults.map((plugin) => (
                   <div
                     className="search-result-item"
                     style={{
@@ -796,8 +807,8 @@ whistle.vase`}
                       </Button>
                     </div>
                   </div>
-                )}
-              />
+                ))}
+              </Flex>
             ) : searchTerm && !searchLoading ? (
               <div style={{ padding: '40px 0', textAlign: 'center' }}>
                 <Empty description="未找到相关插件" />

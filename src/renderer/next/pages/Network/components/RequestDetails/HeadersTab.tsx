@@ -16,8 +16,8 @@ const HeadersTab: React.FC<HeadersTabProps> = ({ request }) => {
     return <Empty description="请选择一个请求" />;
   }
 
-  const requestHeaders = Object.entries(request.requestHeaders);
-  const responseHeaders = Object.entries(request.responseHeaders);
+  const requestHeaders = Object.entries(request.requestHeaders || {});
+  const responseHeaders = Object.entries(request.responseHeaders || {});
 
   return (
     <div style={{ padding: 16, overflow: 'auto', height: '100%' }}>
