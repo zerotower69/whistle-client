@@ -86,6 +86,7 @@
     "@ant-design/icons": "^5.5.3",
     "@electron-toolkit/preload": "^3.0.1",
     "@electron-toolkit/utils": "^3.0.0",
+    "@monaco-editor/react": "^4.7.0",
     "antd": "^6.0.0",
     "electron-context-menu": "^3.6.1",
     "electron-log": "^5.4.3",

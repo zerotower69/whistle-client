@@ -1,30 +1,63 @@
 import React from 'react';
-import { Card, Typography, Empty } from 'antd';
-import { DatabaseOutlined } from '@ant-design/icons';
+import { Layout } from 'antd';
+import ValueTree from './components/ValueTree';
+import ValueEditor from './components/ValueEditor';
+import Toolbar from './components/Toolbar';
+import { useValues } from './hooks/useValues';
 
-const { Title, Paragraph } = Typography;
+const { Sider, Content } = Layout;
 
 /**
- * 值管理页面（占位）
- * 用于管理 Whistle 规则中使用的变量和值
+ * Values management page
+ * For managing key-value pairs used in Whistle rules
  */
 const Values: React.FC = () => {
+  const {
+    values,
+    selectedKey,
+    selectedValue,
+    setSelectedKey,
+    createValue,
+    deleteValue,
+    updateValue,
+    renameValue,
+  } = useValues();
+
+  const handleSave = (content: string) => {
+    if (selectedKey) {
+      updateValue(selectedKey, { content });
+    }
+  };
+
+  const handleLanguageChange = (language: string) => {
+    if (selectedKey) {
+      updateValue(selectedKey, { language });
+    }
+  };
+
   return (
-    <div>
-      <Card size="small">
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={
-            <div>
-              <Paragraph>值管理功能开发中...</Paragraph>
-              <Paragraph type="secondary">
-                此页面将用于管理 Whistle 规则中使用的键值对数据，支持模拟响应、注入数据等功能。
-              </Paragraph>
-            </div>
-          }
+    <Layout style={{ height: 'calc(100vh - 128px)', background: '#fff' }}>
+      <Layout>
+        <Toolbar
+          selectedKey={selectedKey}
+          onCreate={createValue}
+          onDelete={deleteValue}
+          onRename={renameValue}
         />
-      </Card>
-    </div>
+        <Layout style={{ height: 'calc(100% - 57px)' }}>
+          <Sider width={250} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
+            <ValueTree values={values} selectedKey={selectedKey} onSelect={setSelectedKey} />
+          </Sider>
+          <Content>
+            <ValueEditor
+              value={selectedValue || null}
+              onSave={handleSave}
+              onLanguageChange={handleLanguageChange}
+            />
+          </Content>
+        </Layout>
+      </Layout>
+    </Layout>
   );
 };
 
