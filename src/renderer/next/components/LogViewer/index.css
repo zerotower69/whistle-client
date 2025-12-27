@@ -1,0 +1,97 @@
+.log-viewer-trigger {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+}
+
+.log-viewer-container {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 600px;
+  height: 400px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  z-index: 10000;
+  overflow: hidden;
+  border: 1px solid #333;
+  transition: all 0.3s ease;
+}
+
+.log-viewer-header {
+  height: 40px;
+  padding: 0 12px;
+  background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: #fff;
+  user-select: none;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+}
+
+.header-actions .ant-btn-text {
+  color: rgba(255, 255, 255, 0.65) !important;
+  transition: all 0.2s;
+}
+
+.header-actions .ant-btn-text:hover {
+  color: #fff !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.header-actions .ant-select-selector {
+  background-color: #2d2d2d !important;
+  border-color: #444 !important;
+  color: #eee !important;
+}
+
+.header-actions .ant-select-selection-item {
+  color: #eee !important;
+}
+
+.header-actions .ant-select-arrow {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.log-viewer-body {
+  flex: 1;
+  padding: 8px;
+  background: #1e1e1e;
+}
+
+/* xterm 样式微调 */
+.xterm-viewport {
+  background-color: #1e1e1e !important;
+}
+
+.xterm-screen {
+  padding: 4px;
+}
+
+/* 自定义滚动条 */
+.log-viewer-body ::-webkit-scrollbar {
+  width: 10px;
+}
+
+.log-viewer-body ::-webkit-scrollbar-track {
+  background: #1e1e1e;
+}
+
+.log-viewer-body ::-webkit-scrollbar-thumb {
+  background: #333;
+  border: 2px solid #1e1e1e;
+  border-radius: 5px;
+}
+
+.log-viewer-body ::-webkit-scrollbar-thumb:hover {
+  background: #444;
+}

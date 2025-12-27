@@ -11,9 +11,13 @@ import { showMessageBox } from './dialog';
 import { createWindow, restart, showWindow, openMainWindow } from './window';
 import forkWhistle from './fork';
 import { registerIpcHandlers } from './ipc';
+import { initLogger } from './logger';
 import pkg from '../../package.json';
 
 const { version } = pkg;
+
+// 初始化日志系统
+initLogger();
 
 process.env.PFORK_EXEC_PATH = process.execPath;
 

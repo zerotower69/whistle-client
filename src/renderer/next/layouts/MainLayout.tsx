@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Switch, Button, Breadcrumb, Typography, theme } from 'antd';
+import LogViewer from '../components/LogViewer';
 import {
   GlobalOutlined,
   FileTextOutlined,
@@ -28,24 +29,29 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 加载上次选中的 Tab
+  // 加载上次选中的 Tab 和主题
   React.useEffect(() => {
-    const loadLastTab = async () => {
+    const loadSettings = async () => {
       try {
         const { ipcRenderer } = window.require('electron');
+        
+        // 加载 Tab
         const lastTab = await ipcRenderer.invoke('get-setting', 'lastSelectedTab');
         if (lastTab && lastTab !== location.pathname) {
-          // 检查 lastTab 是否在 menuItems 中，防止无效路径
           const validPaths = ['/network', '/rules', '/values', '/plugins'];
           if (validPaths.includes(lastTab)) {
             navigate(lastTab);
           }
         }
+
+        // 加载主题
+        const savedTheme = await ipcRenderer.invoke('get-setting', 'theme-mode');
+        setIsDarkMode(savedTheme === 'dark');
       } catch (error) {
-        console.error('Failed to load last tab:', error);
+        console.error('Failed to load settings:', error);
       }
     };
-    loadLastTab();
+    loadSettings();
   }, []);
 
   const {
@@ -108,9 +114,18 @@ const MainLayout: React.FC = () => {
   };
 
   // 切换主题
-  const handleThemeToggle = (checked: boolean) => {
+  const handleThemeToggle = async (checked: boolean) => {
     setIsDarkMode(checked);
-    document.documentElement.setAttribute('data-theme', checked ? 'dark' : 'light');
+    const { ipcRenderer } = window.require('electron');
+    await ipcRenderer.invoke('set-setting', { key: 'theme-mode', value: checked ? 'dark' : 'light' });
+    
+    if (checked) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+    // 发送自定义事件通知 App.tsx 同步主题
+    window.dispatchEvent(new CustomEvent('theme-change', { detail: checked ? 'dark' : 'light' }));
   };
 
   // 切换代理开关
@@ -136,17 +151,18 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <Layout className="main-layout">
-      {/* 左侧菜单 */}
-      <Sider
-        collapsible
-        collapsed={collapsed}
-        onCollapse={setCollapsed}
-        trigger={null}
-        className="main-sider"
-        theme="light"
-        width={200}
-      >
+    <>
+      <Layout className="main-layout">
+        {/* 左侧菜单 */}
+        <Sider
+          collapsible
+          collapsed={collapsed}
+          onCollapse={setCollapsed}
+          trigger={null}
+          className="main-sider"
+          theme="light"
+          width={200}
+        >
         <div
           style={{
             height: 64,
@@ -229,7 +245,9 @@ const MainLayout: React.FC = () => {
         </Content>
       </Layout>
     </Layout>
-  );
+    <LogViewer />
+  </>
+);
 };
 
 export default MainLayout;
