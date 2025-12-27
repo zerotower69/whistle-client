@@ -409,13 +409,8 @@ const Plugins: React.FC = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-          <Title level={2} className="page-title" style={{ margin: 0 }}>
-            <AppstoreOutlined style={{ marginRight: 8 }} />
-            插件管理
-          </Title>
-
-          <Space size="middle">
+      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12 }}>
+          <Space size="small">
             <Tooltip title="全局启用/禁用所有插件">
               <Switch
                 checkedChildren="已启用"

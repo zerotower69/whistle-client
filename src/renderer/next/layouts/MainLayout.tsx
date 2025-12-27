@@ -161,29 +161,32 @@ const MainLayout: React.FC = () => {
           trigger={null}
           className="main-sider"
           theme="light"
-          width={200}
+          width={160}
+          collapsedWidth={48}
         >
         <div
           style={{
-            height: 64,
+            height: 40,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            padding: '0 16px',
+            padding: '0 8px',
+            borderBottom: '1px solid rgba(0,0,0,0.06)'
           }}
         >
           {!collapsed && (
-            <div className="logo">
-              <ApiOutlined className="logo-icon" />
+            <div className="logo" style={{ fontSize: 14 }}>
+              <ApiOutlined className="logo-icon" style={{ fontSize: 18 }} />
               <span>Whistle</span>
             </div>
           )}
-          {collapsed && <ApiOutlined className="logo-icon" style={{ fontSize: 24 }} />}
+          {collapsed && <ApiOutlined className="logo-icon" style={{ fontSize: 18 }} />}
         </div>
 
         <Menu
           mode="inline"
           selectedKeys={[location.pathname]}
+          inlineIndent={12}
           items={menuItems.map((item) => ({
             key: item.key,
             icon: item.icon,
@@ -195,38 +198,40 @@ const MainLayout: React.FC = () => {
 
       <Layout>
         {/* 顶部导航栏 */}
-        <Header className="main-header" style={{ background: colorBgContainer }}>
+        <Header className="main-header" style={{ background: colorBgContainer, height: 40, padding: '0 12px' }}>
           <div className="main-header-left">
             <Button
               type="text"
               icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: '16px', width: 64, height: 64 }}
+              style={{ fontSize: '14px', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             />
           </div>
 
           <div className="main-header-center">
-            <Title level={4} style={{ margin: 0 }}>
+            <span style={{ fontSize: 14, fontWeight: 500 }}>
               {menuItems.find((item) => item.path === location.pathname)?.label || 'Whistle Client'}
-            </Title>
+            </span>
           </div>
 
           <div className="main-header-right">
             {/* 代理开关 */}
             <Switch
-              checkedChildren="代理开启"
-              unCheckedChildren="代理关闭"
+              size="small"
+              checkedChildren="ON"
+              unCheckedChildren="OFF"
               checked={proxyEnabled}
               onChange={handleProxyToggle}
             />
 
             {/* 设置按钮 */}
-            <Button type="text" icon={<SettingOutlined />} onClick={handleOpenSettings} />
+            <Button type="text" size="small" icon={<SettingOutlined />} onClick={handleOpenSettings} />
 
             {/* 主题切换 */}
             <Switch
-              checkedChildren={<BulbOutlined />}
-              unCheckedChildren={<BulbOutlined />}
+              size="small"
+              checkedChildren={<BulbOutlined style={{ fontSize: 12 }} />}
+              unCheckedChildren={<BulbOutlined style={{ fontSize: 12 }} />}
               checked={isDarkMode}
               onChange={handleThemeToggle}
             />
@@ -235,9 +240,6 @@ const MainLayout: React.FC = () => {
 
         {/* 内容区域 */}
         <Content className="main-layout-content">
-          {/* 面包屑 */}
-          <Breadcrumb className="main-breadcrumb" items={getBreadcrumbs()} />
-
           {/* 子路由渲染 */}
           <div className="main-content">
             <Outlet />

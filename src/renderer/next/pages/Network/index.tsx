@@ -11,11 +11,7 @@ const { Title, Paragraph } = Typography;
 const Network: React.FC = () => {
   return (
     <div>
-      <Title level={2} className="page-title">
-        <GlobalOutlined /> 网络监控
-      </Title>
-
-      <Card>
+      <Card size="small">
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={

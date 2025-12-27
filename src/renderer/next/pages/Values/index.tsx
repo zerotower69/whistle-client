@@ -11,11 +11,7 @@ const { Title, Paragraph } = Typography;
 const Values: React.FC = () => {
   return (
     <div>
-      <Title level={2} className="page-title">
-        <DatabaseOutlined /> 值管理
-      </Title>
-
-      <Card>
+      <Card size="small">
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
