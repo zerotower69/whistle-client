@@ -69,21 +69,21 @@ const Toolbar: React.FC<ToolbarProps> = ({ selectedKey, onCreate, onDelete, onRe
     <>
       <div
         style={{
-          padding: '12px 16px',
+          padding: '8px 12px',
           borderBottom: '1px solid #f0f0f0',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        <Space>
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setIsCreateModalOpen(true)}>
+        <Space size="small">
+          <Button type="primary" size="small" icon={<PlusOutlined />} onClick={() => setIsCreateModalOpen(true)}>
             新建
           </Button>
-          <Button icon={<DeleteOutlined />} onClick={handleDelete} disabled={!selectedKey} danger>
+          <Button size="small" icon={<DeleteOutlined />} onClick={handleDelete} disabled={!selectedKey} danger>
             删除
           </Button>
-          <Button icon={<EditOutlined />} onClick={handleRename} disabled={!selectedKey}>
+          <Button size="small" icon={<EditOutlined />} onClick={handleRename} disabled={!selectedKey}>
             重命名
           </Button>
         </Space>

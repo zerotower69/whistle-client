@@ -92,27 +92,28 @@ const ValueEditor: React.FC<ValueEditorProps> = ({ value, onSave, onLanguageChan
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div
         style={{
-          padding: '12px',
+          padding: '8px 12px',
           borderBottom: '1px solid #f0f0f0',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
       >
-        <Space>
+        <Space size="small">
           <span>语言:</span>
           <Select
+            size="small"
             value={value.language}
             onChange={onLanguageChange}
             options={LANGUAGE_OPTIONS}
-            style={{ width: 150 }}
+            style={{ width: 120 }}
           />
         </Space>
-        <Space>
-          <Button icon={<SaveOutlined />} onClick={handleSave} type="primary">
+        <Space size="small">
+          <Button size="small" icon={<SaveOutlined />} onClick={handleSave} type="primary">
             保存
           </Button>
-          <Button icon={<FullscreenOutlined />} onClick={handleFullscreen}>
+          <Button size="small" icon={<FullscreenOutlined />} onClick={handleFullscreen}>
             全屏
           </Button>
         </Space>

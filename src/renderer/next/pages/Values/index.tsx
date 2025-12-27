@@ -36,7 +36,7 @@ const Values: React.FC = () => {
   };
 
   return (
-    <Layout style={{ height: 'calc(100vh - 128px)', background: '#fff' }}>
+    <Layout style={{ height: 'calc(100vh - 64px)', background: '#fff' }}>
       <Layout>
         <Toolbar
           selectedKey={selectedKey}
@@ -44,7 +44,7 @@ const Values: React.FC = () => {
           onDelete={deleteValue}
           onRename={renameValue}
         />
-        <Layout style={{ height: 'calc(100% - 57px)' }}>
+        <Layout style={{ height: 'calc(100% - 40px)' }}>
           <Sider width={250} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
             <ValueTree values={values} selectedKey={selectedKey} onSelect={setSelectedKey} />
           </Sider>
