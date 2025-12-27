@@ -60,9 +60,17 @@ const RequestTable: React.FC<RequestTableProps> = ({ requests, selectedId, onSel
     {
       title: 'Status',
       dataIndex: 'statusCode',
-      key: 'status',
+      key: 'statusCode',
       width: 80,
-      render: (status: number) => <Tag color={getStatusColor(status)}>{status}</Tag>,
+      render: (statusCode: number) => {
+        let color = 'default';
+        if (statusCode >= 200 && statusCode < 300) color = 'success';
+        else if (statusCode >= 300 && statusCode < 400) color = 'processing';
+        else if (statusCode >= 400 && statusCode < 500) color = 'warning';
+        else if (statusCode >= 500) color = 'error';
+
+        return <Tag color={color}>{statusCode}</Tag>;
+      },
     },
     {
       title: 'Method',
@@ -100,6 +108,9 @@ const RequestTable: React.FC<RequestTableProps> = ({ requests, selectedId, onSel
       render: (_, request) => (
         <WaterfallCell request={request} baseTime={baseTime} maxTime={maxTime} width={280} />
       ),
+      key: 'timing',
+      width: 100,
+      render: (timing: NetworkRequest['timing']) => `${timing.total.toFixed(0)}ms`,
     },
   ];
 
@@ -110,7 +121,7 @@ const RequestTable: React.FC<RequestTableProps> = ({ requests, selectedId, onSel
       rowKey="id"
       size="small"
       pagination={false}
-      scroll={{ y: 'calc(100vh - 300px)' }}
+      scroll={{ y: 'calc(100vh - 280px)' }}
       onRow={(record) => ({
         onClick: () => onSelectRequest(record),
         style: {

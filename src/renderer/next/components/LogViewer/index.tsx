@@ -34,7 +34,7 @@ const LogViewer: React.FC = () => {
       if (savedVisible !== null) setVisible(!!savedVisible);
       if (savedMinimized !== null) setMinimized(!!savedMinimized);
       if (savedFilter !== null) setFilter(String(savedFilter));
-      
+
       // 延迟设置初始化完成标志，确保状态更新已生效
       setTimeout(() => {
         isInitialized.current = true;
@@ -105,7 +105,7 @@ const LogViewer: React.FC = () => {
       const fitAddon = new FitAddon();
       term.loadAddon(fitAddon);
       term.open(terminalRef.current);
-      
+
       try {
         fitAddon.fit();
       } catch (e) {

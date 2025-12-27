@@ -1,69 +1,86 @@
-import React, { useState } from 'react';
-import { Layout, Splitter, message } from 'antd';
+import React, { useState, useMemo } from 'react';
+import { Layout, Splitter } from 'antd';
 import Toolbar from './components/Toolbar';
+import WaterfallViewer from './components/WaterfallViewer';
 import RequestTable from './components/RequestTable';
 import RequestDetails from './components/RequestDetails';
 import { useNetworkCapture } from './hooks/useNetworkCapture';
 import { useNetworkFilter } from './hooks/useNetworkFilter';
-import { downloadHAR } from './utils/exportHAR';
+import { convertToHAR } from './utils/convertToHAR';
+import { exportHARFile } from './utils/exportHAR';
 import type { NetworkRequest } from './types';
 
-const { Header, Content } = Layout;
+const { Content } = Layout;
 
 /**
- * Network monitoring page
- * Used for monitoring and analyzing HTTP/HTTPS requests
+ * 网络监控页面
+ * 用于监控和分析 HTTP/HTTPS 请求
  */
 const Network: React.FC = () => {
+  // Network capture logic
   const { requests, isPaused, togglePause, clearRequests } = useNetworkCapture();
-  const {
-    filteredRequests,
-    searchText,
-    setSearchText,
-    selectedMethods,
-    setSelectedMethods,
-    selectedTypes,
-    setSelectedTypes,
-  } = useNetworkFilter(requests);
+
+  // Filter logic
+  const { filteredRequests, ...filterProps } = useNetworkFilter(requests);
+
+  // Selected request
   const [selectedRequest, setSelectedRequest] = useState<NetworkRequest | null>(null);
 
+  // Convert to HAR format
+  const harData = useMemo(() => {
+    return convertToHAR(filteredRequests);
+  }, [filteredRequests]);
+
+  // Export HAR
   const handleExportHAR = () => {
-    try {
-      downloadHAR(filteredRequests);
-      message.success('HAR 文件导出成功');
-    } catch (error) {
-      message.error('HAR 文件导出失败');
+    const success = exportHARFile(harData, `network-${Date.now()}.har`);
+    if (success) {
+      console.log('HAR exported successfully');
+    }
+  };
+
+  // Handle waterfall request selection
+  const handleWaterfallSelect = (requestId: string) => {
+    const request = filteredRequests.find((r) => r.id === requestId || new Date(r.startTime).toISOString() === requestId);
+    if (request) {
+      setSelectedRequest(request);
     }
   };
 
   return (
-    <Layout style={{ height: '100%', overflow: 'hidden', background: '#fff' }}>
-      <Header
+    <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {/* Toolbar */}
+      <div
         style={{
-          background: '#fff',
-          padding: '0 12px',
+          padding: '8px 16px',
           borderBottom: '1px solid #f0f0f0',
-          height: 40,
-          lineHeight: '40px',
+          backgroundColor: '#fff',
         }}
       >
         <Toolbar
           isPaused={isPaused}
           togglePause={togglePause}
           clearRequests={clearRequests}
-          exportHAR={handleExportHAR}
+          onExportHAR={handleExportHAR}
           requestCount={requests.length}
-          searchText={searchText}
-          onSearchChange={setSearchText}
-          selectedMethods={selectedMethods}
-          onMethodsChange={setSelectedMethods}
-          selectedTypes={selectedTypes}
-          onTypesChange={setSelectedTypes}
+          {...filterProps}
         />
-      </Header>
+      </div>
 
-      <Content style={{ height: 'calc(100% - 40px)', overflow: 'hidden' }}>
-        <Splitter layout="vertical" style={{ height: '100%' }}>
+      {/* Waterfall area */}
+      <div style={{ height: 400, flexShrink: 0 }}>
+        <WaterfallViewer
+          harData={harData}
+          height={400}
+          selectedId={selectedRequest ? new Date(selectedRequest.startTime).toISOString() : null}
+          onRequestSelect={handleWaterfallSelect}
+        />
+      </div>
+
+      {/* Request list + details */}
+      <Content style={{ flex: 1, overflow: 'hidden' }}>
+        <Splitter layout="vertical">
+          {/* Request list */}
           <Splitter.Panel defaultSize="60%" min="40%" max="80%">
             <RequestTable
               requests={filteredRequests}
@@ -72,6 +89,7 @@ const Network: React.FC = () => {
             />
           </Splitter.Panel>
 
+          {/* Request details */}
           <Splitter.Panel>
             <RequestDetails request={selectedRequest} />
           </Splitter.Panel>

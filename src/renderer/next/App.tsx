@@ -1,6 +1,6 @@
 import { RouterProvider } from 'react-router-dom';
 import router from './router';
-import { ConfigProvider, theme, App as AntdApp } from 'antd';
+import { ConfigProvider, theme } from 'antd';
 import { useEffect, useState } from 'react';
 
 function App() {
