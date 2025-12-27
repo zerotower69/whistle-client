@@ -76,7 +76,12 @@ const RequestTab: React.FC<RequestTabProps> = ({ request }) => {
                 ? request.requestBody
                 : `data:${request.requestHeaders?.['content-type'] || 'image/png'};base64,${request.requestBody}`
             }
-            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}
+            style={{
+              maxWidth: '100%',
+              maxHeight: '100%',
+              objectFit: 'contain',
+              boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+            }}
             alt="Request Preview"
           />
         </div>

@@ -180,7 +180,7 @@ const ipcHandlers = {
  */
 export const registerIpcHandlers = () => {
   console.log('[IPC] Registering handlers...');
-  
+
   Object.entries(ipcHandlers).forEach(([moduleName, moduleConfig]) => {
     // 注册 handle (双向)
     if (moduleConfig.handle) {

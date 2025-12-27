@@ -143,7 +143,12 @@ const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
                   ? request.responseBody
                   : `data:${request.responseHeaders?.['content-type'] || 'image/png'};base64,${request.responseBody}`
               }
-              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', boxShadow: '0 0 10px rgba(0,0,0,0.1)' }}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '100%',
+                objectFit: 'contain',
+                boxShadow: '0 0 10px rgba(0,0,0,0.1)',
+              }}
               alt="Response Preview"
             />
           </div>
@@ -163,7 +168,12 @@ const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
             <div style={{ marginTop: 8, fontSize: 12 }}>
               类型: {request.responseHeaders?.['content-type'] || 'unknown'}
             </div>
-            <Button type="primary" icon={<DownloadOutlined />} style={{ marginTop: 24 }} onClick={handleDownload}>
+            <Button
+              type="primary"
+              icon={<DownloadOutlined />}
+              style={{ marginTop: 24 }}
+              onClick={handleDownload}
+            >
               下载文件
             </Button>
           </div>

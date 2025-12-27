@@ -198,11 +198,7 @@ const Settings: React.FC = () => {
                 labelCol={{ span: 8 }}
                 wrapperCol={{ span: 16 }}
               >
-                <Input
-                  id="host"
-                  placeholder="Bound IP or Domain"
-                  maxLength={255}
-                />
+                <Input id="host" placeholder="Bound IP or Domain" maxLength={255} />
               </Form.Item>
 
               <Form.Item
@@ -219,7 +215,9 @@ const Settings: React.FC = () => {
                       style={{ width: '48%' }}
                     />
                   </Form.Item>
-                  <span style={{ display: 'inline-block', width: '4%', textAlign: 'center' }}>:</span>
+                  <span style={{ display: 'inline-block', width: '4%', textAlign: 'center' }}>
+                    :
+                  </span>
                   <Form.Item name="password" noStyle>
                     <Input
                       id="password"

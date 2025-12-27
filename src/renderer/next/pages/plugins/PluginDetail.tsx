@@ -172,10 +172,9 @@ const PluginDetail: React.FC = () => {
             <Descriptions.Item label="版本">
               <Space>
                 <Tag color="blue">v{plugin.installedVersion}</Tag>
-                {plugin.latestVersion &&
-                  plugin.latestVersion !== plugin.installedVersion && (
-                    <Tag color="warning">最新版本: v{plugin.latestVersion}</Tag>
-                  )}
+                {plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion && (
+                  <Tag color="warning">最新版本: v{plugin.latestVersion}</Tag>
+                )}
               </Space>
             </Descriptions.Item>
             <Descriptions.Item label="状态">
@@ -192,9 +191,7 @@ const PluginDetail: React.FC = () => {
             <Descriptions.Item label="描述">
               <Paragraph>{plugin.description || '暂无描述'}</Paragraph>
             </Descriptions.Item>
-            {plugin.author && (
-              <Descriptions.Item label="作者">{plugin.author}</Descriptions.Item>
-            )}
+            {plugin.author && <Descriptions.Item label="作者">{plugin.author}</Descriptions.Item>}
             {plugin.homepage && (
               <Descriptions.Item label="主页">
                 <a href={plugin.homepage} target="_blank" rel="noopener noreferrer">

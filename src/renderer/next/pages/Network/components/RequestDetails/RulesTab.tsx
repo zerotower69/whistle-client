@@ -25,7 +25,9 @@ const RulesTab: React.FC<RulesTabProps> = ({ request }) => {
       <Flex vertical gap="small">
         {request.rules.map((rule, index) => (
           <Flex key={index} align="start" gap="small" style={{ marginBottom: 8 }}>
-            <Tag color="blue" style={{ marginTop: 2 }}>#{index + 1}</Tag>
+            <Tag color="blue" style={{ marginTop: 2 }}>
+              #{index + 1}
+            </Tag>
             <Text style={{ flex: 1, wordBreak: 'break-all' }}>{rule}</Text>
           </Flex>
         ))}

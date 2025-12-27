@@ -33,7 +33,7 @@ const WaterfallViewerComponent: React.FC<WaterfallViewerProps> = ({
 
     const renderWaterfall = () => {
       if (!containerRef.current) return;
-      
+
       // Clear container
       containerRef.current.innerHTML = '';
 

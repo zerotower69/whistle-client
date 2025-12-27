@@ -59,7 +59,10 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
     <div>
       <div style={{ marginBottom: TOOLTIP_MARGIN_BOTTOM, fontWeight: 'bold' }}>{request.url}</div>
       {phases.map((phase: WaterfallPhase, index: number) => (
-        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: TOOLTIP_GAP }}>
+        <div
+          key={index}
+          style={{ display: 'flex', justifyContent: 'space-between', gap: TOOLTIP_GAP }}
+        >
           <span>
             <span
               style={{
@@ -112,7 +115,10 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
         {/* Phase blocks */}
         {phases.map((phase: WaterfallPhase, index: number) => {
           const prevPhases = phases.slice(0, index);
-          const prevDuration = prevPhases.reduce((sum: number, p: WaterfallPhase) => sum + p.duration, 0);
+          const prevDuration = prevPhases.reduce(
+            (sum: number, p: WaterfallPhase) => sum + p.duration,
+            0,
+          );
           const left = offsetPx + prevDuration * scale;
           const phaseWidth = phase.duration * scale;
 

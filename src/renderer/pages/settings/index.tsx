@@ -42,7 +42,7 @@ document.body.style.overscrollBehaviorX = 'none';
 const getInitialTheme = () => {
   try {
     const { ipcRenderer } = window.require('electron');
-    // Note: This is a synchronous-ish way to get settings if we had a sync IPC, 
+    // Note: This is a synchronous-ish way to get settings if we had a sync IPC,
     // but since we don't, we'll start with system theme and let App handle it if needed,
     // or just stick to system theme for this small modal.
     return window.matchMedia('(prefers-color-scheme: dark)').matches;

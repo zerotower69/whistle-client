@@ -55,9 +55,9 @@ const parseSettings = (data) => {
       const port = url.port;
       const localIP = getLocalIP();
       const viteBypass = [`localhost:${port}`, `127.0.0.1:${port}`, `${localIP}:${port}`];
-      
+
       const bypassList = bypass ? bypass.split(/[,\s]+/) : [];
-      viteBypass.forEach(host => {
+      viteBypass.forEach((host) => {
         if (!bypassList.includes(host)) {
           bypassList.push(host);
         }

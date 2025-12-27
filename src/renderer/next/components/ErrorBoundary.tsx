@@ -32,7 +32,15 @@ class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div style={{ padding: 40, height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div
+          style={{
+            padding: 40,
+            height: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
           <Result
             status="error"
             title="页面崩溃了"
@@ -41,7 +49,7 @@ class ErrorBoundary extends Component<Props, State> {
               <Button type="primary" key="reload" onClick={() => window.location.reload()}>
                 刷新页面
               </Button>,
-              <Button key="home" onClick={() => window.location.href = '/'}>
+              <Button key="home" onClick={() => (window.location.href = '/')}>
                 返回首页
               </Button>,
             ]}

@@ -55,7 +55,7 @@ export const convertToHAR = (requests: NetworkRequest[]): Har => {
       dns: request.timing?.dnsLookup || 0,
       connect: request.timing?.initialConnection || 0,
       send: request.timing?.requestSent || 0,
-      wait: request.timing?.waiting || (request.timing?.total || 0),
+      wait: request.timing?.waiting || request.timing?.total || 0,
       receive: request.timing?.contentDownload || 0,
       ssl: request.timing?.sslHandshake || -1,
     };

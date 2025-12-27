@@ -31,7 +31,7 @@ const notifyProxyStatus = () => {
 // Initialize proxy status
 const initProxyStatus = () => {
   if (_initPromise) return _initPromise;
-  
+
   _initPromise = new Promise((resolve) => {
     getServerProxy((err, status) => {
       if (!err && status) {
@@ -44,7 +44,7 @@ const initProxyStatus = () => {
       resolve(_isEnabled);
     });
   });
-  
+
   return _initPromise;
 };
 
@@ -93,7 +93,7 @@ const installProxyHelper = async () => {
         console.log('[Proxy] Helper stats:', {
           uid: stats.uid,
           mode: stats.mode.toString(8),
-          size: stats.size
+          size: stats.size,
         });
       } catch (e) {
         console.error('[Proxy] Failed to stat helper after install:', e);

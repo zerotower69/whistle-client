@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './index.css';
 import { useWhistleSync } from '../../hooks/useWhistleSync';
-import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -25,6 +24,7 @@ import {
   Badge,
   Alert,
   List,
+  Tabs,
 } from 'antd';
 import {
   DownloadOutlined,
@@ -60,6 +60,13 @@ interface Plugin {
   dependencies?: string[];
 }
 
+// 插件 Tab 数据类型
+interface PluginTab {
+  key: string; // 唯一标识
+  name: string; // 插件名称
+  url: string; // iframe 地址
+}
+
 // 预设的 npm 镜像源
 const DEFAULT_REGISTRIES = [
   { label: 'npm 官方镜像', value: 'https://registry.npmjs.org/' },
@@ -71,7 +78,6 @@ const DEFAULT_REGISTRIES = [
 const Plugins: React.FC = () => {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  const navigate = useNavigate();
 
   // 状态管理
   const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([]);
@@ -85,6 +91,10 @@ const Plugins: React.FC = () => {
   const [registryHistory, setRegistryHistory] = useState<string[]>([]);
   const [globalPluginsEnabled, setGlobalPluginsEnabled] = useState(true);
   const [checkingUpdate, setCheckingUpdate] = useState<Record<string, boolean>>({});
+
+  // Tabs 状态管理
+  const [activeTab, setActiveTab] = useState<string>('home');
+  const [openPluginTabs, setOpenPluginTabs] = useState<PluginTab[]>([]);
 
   // 处理插件列表更新
   const handlePluginsList = useCallback((pluginsMap: any, disabledAllPlugins?: boolean) => {
@@ -403,6 +413,63 @@ const Plugins: React.FC = () => {
     }
   };
 
+  // 获取插件 UI 地址
+  const getPluginHomepage = (plugin: Plugin): string => {
+    // 优先使用 pluginHomepage
+    if (plugin.homepage) {
+      return plugin.homepage;
+    }
+
+    // 否则使用默认地址
+    const port = 8899; // 默认端口，可以从配置获取
+    return `http://local.whistlejs.com:${port}/plugin.${plugin.name}/`;
+  };
+
+  // 打开插件 Tab
+  const handleOpenPluginTab = (plugin: Plugin) => {
+    const tabKey = `plugin-${plugin.name}`;
+
+    // 如果已打开，直接切换
+    if (openPluginTabs.some((tab) => tab.key === tabKey)) {
+      setActiveTab(tabKey);
+      return;
+    }
+
+    // 构造插件 UI 地址
+    const url = getPluginHomepage(plugin);
+
+    // 新增 Tab
+    setOpenPluginTabs((prev) => [
+      ...prev,
+      {
+        key: tabKey,
+        name: plugin.name,
+        url: url,
+      },
+    ]);
+
+    setActiveTab(tabKey);
+  };
+
+  // 关闭 Tab
+  const handleCloseTab = (targetKey: string) => {
+    const index = openPluginTabs.findIndex((tab) => tab.key === targetKey);
+    if (index === -1) return;
+
+    const newTabs = openPluginTabs.filter((tab) => tab.key !== targetKey);
+    setOpenPluginTabs(newTabs);
+
+    // 如果关闭的是当前 Tab，切换到前一个
+    if (activeTab === targetKey) {
+      if (newTabs.length > 0) {
+        const newActiveKey = index > 0 ? newTabs[index - 1].key : newTabs[0].key;
+        setActiveTab(newActiveKey);
+      } else {
+        setActiveTab('home');
+      }
+    }
+  };
+
   const installedCount = installedPlugins.length;
   const enabledCount = installedPlugins.filter((p) => p.enabled).length;
   const availableUpdates = installedPlugins.filter(
@@ -412,275 +479,332 @@ const Plugins: React.FC = () => {
   return (
     <div>
       {contextHolder}
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'flex-end',
-          alignItems: 'center',
-          marginBottom: 12,
+      <Tabs
+        type="editable-card"
+        hideAdd
+        activeKey={activeTab}
+        onChange={setActiveTab}
+        onEdit={(targetKey, action) => {
+          if (action === 'remove' && typeof targetKey === 'string') {
+            handleCloseTab(targetKey);
+          }
         }}
-      >
-        <Space size="small">
-          <Tooltip title="全局启用/禁用所有插件">
-            <Switch
-              checkedChildren="已启用"
-              unCheckedChildren="已禁用"
-              checked={globalPluginsEnabled}
-              onChange={handleToggleAllPlugins}
-            />
-          </Tooltip>
+        items={[
+          {
+            key: 'home',
+            label: '插件管理',
+            closable: false,
+            children: (
+              <div>
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    alignItems: 'center',
+                    marginBottom: 12,
+                  }}
+                >
+                  <Space size="small">
+                    <Tooltip title="全局启用/禁用所有插件">
+                      <Switch
+                        checkedChildren="已启用"
+                        unCheckedChildren="已禁用"
+                        checked={globalPluginsEnabled}
+                        onChange={handleToggleAllPlugins}
+                      />
+                    </Tooltip>
 
-          <Button icon={<ReloadOutlined />} onClick={handleRefreshPlugins} loading={loading}>
-            刷新
-          </Button>
+                    <Button
+                      icon={<ReloadOutlined />}
+                      onClick={handleRefreshPlugins}
+                      loading={loading}
+                    >
+                      刷新
+                    </Button>
 
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setInstallModal(true)}>
-            安装插件
-          </Button>
+                    <Button
+                      type="primary"
+                      icon={<PlusOutlined />}
+                      onClick={() => setInstallModal(true)}
+                    >
+                      安装插件
+                    </Button>
 
-          <Tooltip
-            title={`搜索插件 (${window.navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'})`}
-          >
-            <Button icon={<SearchOutlined />} onClick={() => setSearchModalVisible(true)}>
-              搜索插件
-            </Button>
-          </Tooltip>
-        </Space>
-      </div>
+                    <Tooltip
+                      title={`搜索插件 (${window.navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'})`}
+                    >
+                      <Button icon={<SearchOutlined />} onClick={() => setSearchModalVisible(true)}>
+                        搜索插件
+                      </Button>
+                    </Tooltip>
+                  </Space>
+                </div>
+
+                <div>
+                  {/* 统计信息卡片 */}
+                  <div className="stats-cards">
+                    <Row gutter={16} style={{ display: 'flex', alignItems: 'stretch' }}>
+                      <Col span={6}>
+                        <Card style={{ height: '100%' }}>
+                          <Statistic
+                            title="已安装插件"
+                            value={installedCount}
+                            prefix={<AppstoreOutlined />}
+                            valueStyle={{ color: '#1890ff' }}
+                          />
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card style={{ height: '100%' }}>
+                          <Statistic
+                            title="已启用插件"
+                            value={enabledCount}
+                            prefix={<CheckCircleOutlined />}
+                            valueStyle={{ color: '#52c41a' }}
+                          />
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card style={{ height: '100%' }}>
+                          <Statistic
+                            title="可更新插件"
+                            value={availableUpdates}
+                            prefix={<ClockCircleOutlined />}
+                            valueStyle={{ color: '#faad14' }}
+                          />
+                        </Card>
+                      </Col>
+                      <Col span={6}>
+                        <Card style={{ height: '100%' }}>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: 14, display: 'block', marginBottom: 4 }}
+                          >
+                            镜像源
+                          </Text>
+                          <div style={{ display: 'flex', alignItems: 'center', height: 38 }}>
+                            <GlobalOutlined
+                              style={{ color: '#722ed1', fontSize: 24, marginRight: 8 }}
+                            />
+                            <Select
+                              value={selectedRegistry}
+                              onChange={handleRegistryChange}
+                              variant="borderless"
+                              showSearch
+                              placeholder="选择镜像源"
+                              style={{
+                                flex: 1,
+                                marginLeft: -11,
+                                color: '#722ed1',
+                                fontWeight: 'bold',
+                                fontSize: 24,
+                              }}
+                              popupMatchSelectWidth={false}
+                            >
+                              {DEFAULT_REGISTRIES.map((reg) => (
+                                <Option key={reg.value} value={reg.value}>
+                                  {reg.label}
+                                </Option>
+                              ))}
+                              {registryHistory
+                                .filter((url) => !DEFAULT_REGISTRIES.some((r) => r.value === url))
+                                .map((url) => (
+                                  <Option key={url} value={url}>
+                                    {url}
+                                  </Option>
+                                ))}
+                            </Select>
+                          </div>
+                        </Card>
+                      </Col>
+                    </Row>
+                  </div>
+
+                  {/* 已安装插件列表 */}
+                  <Card
+                    title={`已安装插件 (${installedCount})`}
+                    extra={
+                      <Space>
+                        {availableUpdates > 0 && (
+                          <Badge count={availableUpdates} offset={[10, 0]}>
+                            <Button size="small" type="link">
+                              有更新可用
+                            </Button>
+                          </Badge>
+                        )}
+                      </Space>
+                    }
+                  >
+                    {installedPlugins.length === 0 ? (
+                      <Empty
+                        className="empty-state"
+                        image={Empty.PRESENTED_IMAGE_SIMPLE}
+                        description="暂无已安装的插件"
+                      >
+                        <Button type="primary" onClick={() => setInstallModal(true)}>
+                          安装第一个插件
+                        </Button>
+                      </Empty>
+                    ) : (
+                      <Flex vertical gap="middle">
+                        {installedPlugins.map((plugin) => (
+                          <Card
+                            key={plugin.name}
+                            className="plugin-card"
+                            size="small"
+                            actions={[
+                              <Switch
+                                key="toggle"
+                                size="small"
+                                checked={plugin.enabled}
+                                onChange={(enabled) => handleTogglePlugin(plugin.name, enabled)}
+                                disabled={!globalPluginsEnabled}
+                              />,
+                              <Tooltip key="settings" title="插件设置">
+                                <Button size="small" icon={<SettingOutlined />} type="text" />
+                              </Tooltip>,
+                              <Button
+                                key="check-update"
+                                size="small"
+                                type="link"
+                                loading={checkingUpdate[plugin.name]}
+                                onClick={() => handleCheckUpdate(plugin.name)}
+                              >
+                                检查更新
+                              </Button>,
+                              plugin.latestVersion &&
+                              plugin.latestVersion !== plugin.installedVersion ? (
+                                <Button
+                                  key="update"
+                                  size="small"
+                                  type="primary"
+                                  onClick={() => handleUpdatePlugin(plugin.name)}
+                                >
+                                  更新到 v{plugin.latestVersion}
+                                </Button>
+                              ) : plugin.latestVersion === plugin.installedVersion ? (
+                                <Text key="latest" type="secondary" style={{ fontSize: '12px' }}>
+                                  已是最新版本
+                                </Text>
+                              ) : null,
+                              <Popconfirm
+                                key="delete"
+                                title="确定要卸载这个插件吗？"
+                                onConfirm={() => handleUninstallPlugin(plugin.name)}
+                                okText="确定"
+                                cancelText="取消"
+                              >
+                                <Button size="small" danger icon={<DeleteOutlined />} type="text" />
+                              </Popconfirm>,
+                            ]}
+                          >
+                            <List.Item.Meta
+                              title={
+                                <div className="plugin-header">
+                                  <Space>
+                                    <Text
+                                      strong
+                                      style={{ cursor: 'pointer', color: '#1890ff' }}
+                                      onClick={() => handleOpenPluginTab(plugin)}
+                                    >
+                                      {plugin.name}
+                                    </Text>
+                                    {plugin.enabled ? (
+                                      <Tag color="success" icon={<CheckCircleOutlined />}>
+                                        已启用
+                                      </Tag>
+                                    ) : (
+                                      <Tag color="default">已禁用</Tag>
+                                    )}
+                                    {plugin.latestVersion &&
+                                      plugin.latestVersion !== plugin.installedVersion && (
+                                        <Tag color="warning" icon={<ExclamationCircleOutlined />}>
+                                          有更新
+                                        </Tag>
+                                      )}
+                                  </Space>
+                                </div>
+                              }
+                              description={
+                                <div>
+                                  <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 8 }}>
+                                    {plugin.description || '暂无描述'}
+                                  </Paragraph>
+                                  <div className="plugin-meta">
+                                    <Space separator={<Divider type="vertical" />}>
+                                      <Text type="secondary">版本: {plugin.installedVersion}</Text>
+                                      {plugin.latestVersion &&
+                                        plugin.latestVersion !== plugin.installedVersion && (
+                                          <Text type="warning">最新: {plugin.latestVersion}</Text>
+                                        )}
+                                      {plugin.lastUpdated && (
+                                        <Text type="secondary">更新: {plugin.lastUpdated}</Text>
+                                      )}
+                                      {plugin.author && (
+                                        <Text type="secondary">作者: {plugin.author}</Text>
+                                      )}
+                                    </Space>
+                                  </div>
+                                  {plugin.keywords && (
+                                    <div style={{ marginTop: 8 }}>
+                                      <Space size={[0, 4]} wrap>
+                                        {plugin.keywords.map((keyword: string) => (
+                                          <Tag key={keyword} style={{ fontSize: '11px' }}>
+                                            {keyword}
+                                          </Tag>
+                                        ))}
+                                      </Space>
+                                    </div>
+                                  )}
+                                  {plugin.homepage && (
+                                    <div style={{ marginTop: 8 }}>
+                                      <Tooltip title="查看主页">
+                                        <Button
+                                          type="text"
+                                          size="small"
+                                          icon={<GlobalOutlined />}
+                                          onClick={() => window.open(plugin.homepage)}
+                                          style={{ padding: 0, height: 'auto' }}
+                                        >
+                                          插件主页
+                                        </Button>
+                                      </Tooltip>
+                                    </div>
+                                  )}
+                                </div>
+                              }
+                            />
+                          </Card>
+                        ))}
+                      </Flex>
+                    )}
+                  </Card>
+                </div>
+              </div>
+            ),
+          },
+          ...openPluginTabs.map((tab) => ({
+            key: tab.key,
+            label: tab.name,
+            closable: true,
+            children: (
+              <div className="plugin-iframe-container">
+                <iframe
+                  src={tab.url}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    border: 'none',
+                  }}
+                  title={tab.name}
+                />
+              </div>
+            ),
+          })),
+        ]}
+      />
 
       <div>
-        {/* 统计信息卡片 */}
-        <div className="stats-cards">
-          <Row gutter={16} style={{ display: 'flex', alignItems: 'stretch' }}>
-            <Col span={6}>
-              <Card style={{ height: '100%' }}>
-                <Statistic
-                  title="已安装插件"
-                  value={installedCount}
-                  prefix={<AppstoreOutlined />}
-                  valueStyle={{ color: '#1890ff' }}
-                />
-              </Card>
-            </Col>
-            <Col span={6}>
-              <Card style={{ height: '100%' }}>
-                <Statistic
-                  title="已启用插件"
-                  value={enabledCount}
-                  prefix={<CheckCircleOutlined />}
-                  valueStyle={{ color: '#52c41a' }}
-                />
-              </Card>
-            </Col>
-            <Col span={6}>
-              <Card style={{ height: '100%' }}>
-                <Statistic
-                  title="可更新插件"
-                  value={availableUpdates}
-                  prefix={<ClockCircleOutlined />}
-                  valueStyle={{ color: '#faad14' }}
-                />
-              </Card>
-            </Col>
-            <Col span={6}>
-              <Card style={{ height: '100%' }}>
-                <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 4 }}>
-                  镜像源
-                </Text>
-                <div style={{ display: 'flex', alignItems: 'center', height: 38 }}>
-                  <GlobalOutlined style={{ color: '#722ed1', fontSize: 24, marginRight: 8 }} />
-                  <Select
-                    value={selectedRegistry}
-                    onChange={handleRegistryChange}
-                    variant="borderless"
-                    showSearch
-                    placeholder="选择镜像源"
-                    style={{
-                      flex: 1,
-                      marginLeft: -11,
-                      color: '#722ed1',
-                      fontWeight: 'bold',
-                      fontSize: 24,
-                    }}
-                    popupMatchSelectWidth={false}
-                  >
-                    {DEFAULT_REGISTRIES.map((reg) => (
-                      <Option key={reg.value} value={reg.value}>
-                        {reg.label}
-                      </Option>
-                    ))}
-                    {registryHistory
-                      .filter((url) => !DEFAULT_REGISTRIES.some((r) => r.value === url))
-                      .map((url) => (
-                        <Option key={url} value={url}>
-                          {url}
-                        </Option>
-                      ))}
-                  </Select>
-                </div>
-              </Card>
-            </Col>
-          </Row>
-        </div>
-
-        {/* 已安装插件列表 */}
-        <Card
-          title={`已安装插件 (${installedCount})`}
-          extra={
-            <Space>
-              {availableUpdates > 0 && (
-                <Badge count={availableUpdates} offset={[10, 0]}>
-                  <Button size="small" type="link">
-                    有更新可用
-                  </Button>
-                </Badge>
-              )}
-            </Space>
-          }
-        >
-          {installedPlugins.length === 0 ? (
-            <Empty
-              className="empty-state"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-              description="暂无已安装的插件"
-            >
-              <Button type="primary" onClick={() => setInstallModal(true)}>
-                安装第一个插件
-              </Button>
-            </Empty>
-          ) : (
-            <Flex vertical gap="middle">
-              {installedPlugins.map((plugin) => (
-                <Card
-                  key={plugin.name}
-                  className="plugin-card"
-                  size="small"
-                  actions={[
-                    <Switch
-                      key="toggle"
-                      size="small"
-                      checked={plugin.enabled}
-                      onChange={(enabled) => handleTogglePlugin(plugin.name, enabled)}
-                      disabled={!globalPluginsEnabled}
-                    />,
-                    <Tooltip key="settings" title="插件设置">
-                      <Button size="small" icon={<SettingOutlined />} type="text" />
-                    </Tooltip>,
-                    <Button
-                      key="check-update"
-                      size="small"
-                      type="link"
-                      loading={checkingUpdate[plugin.name]}
-                      onClick={() => handleCheckUpdate(plugin.name)}
-                    >
-                      检查更新
-                    </Button>,
-                    plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion ? (
-                      <Button
-                        key="update"
-                        size="small"
-                        type="primary"
-                        onClick={() => handleUpdatePlugin(plugin.name)}
-                      >
-                        更新到 v{plugin.latestVersion}
-                      </Button>
-                    ) : plugin.latestVersion === plugin.installedVersion ? (
-                      <Text key="latest" type="secondary" style={{ fontSize: '12px' }}>
-                        已是最新版本
-                      </Text>
-                    ) : null,
-                    <Popconfirm
-                      key="delete"
-                      title="确定要卸载这个插件吗？"
-                      onConfirm={() => handleUninstallPlugin(plugin.name)}
-                      okText="确定"
-                      cancelText="取消"
-                    >
-                      <Button size="small" danger icon={<DeleteOutlined />} type="text" />
-                    </Popconfirm>,
-                  ]}
-                >
-                  <List.Item.Meta
-                    title={
-                      <div className="plugin-header">
-                        <Space>
-                          <Text
-                            strong
-                            style={{ cursor: 'pointer', color: '#1890ff' }}
-                            onClick={() => navigate(`/plugins/${plugin.name}`)}
-                          >
-                            {plugin.name}
-                          </Text>
-                          {plugin.enabled ? (
-                            <Tag color="success" icon={<CheckCircleOutlined />}>
-                              已启用
-                            </Tag>
-                          ) : (
-                            <Tag color="default">已禁用</Tag>
-                          )}
-                          {plugin.latestVersion &&
-                            plugin.latestVersion !== plugin.installedVersion && (
-                              <Tag color="warning" icon={<ExclamationCircleOutlined />}>
-                                有更新
-                              </Tag>
-                            )}
-                        </Space>
-                      </div>
-                    }
-                    description={
-                      <div>
-                        <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 8 }}>
-                          {plugin.description || '暂无描述'}
-                        </Paragraph>
-                        <div className="plugin-meta">
-                          <Space separator={<Divider type="vertical" />}>
-                            <Text type="secondary">版本: {plugin.installedVersion}</Text>
-                            {plugin.latestVersion &&
-                              plugin.latestVersion !== plugin.installedVersion && (
-                                <Text type="warning">最新: {plugin.latestVersion}</Text>
-                              )}
-                            {plugin.lastUpdated && (
-                              <Text type="secondary">更新: {plugin.lastUpdated}</Text>
-                            )}
-                            {plugin.author && <Text type="secondary">作者: {plugin.author}</Text>}
-                          </Space>
-                        </div>
-                        {plugin.keywords && (
-                          <div style={{ marginTop: 8 }}>
-                            <Space size={[0, 4]} wrap>
-                              {plugin.keywords.map((keyword: string) => (
-                                <Tag key={keyword} style={{ fontSize: '11px' }}>
-                                  {keyword}
-                                </Tag>
-                              ))}
-                            </Space>
-                          </div>
-                        )}
-                        {plugin.homepage && (
-                          <div style={{ marginTop: 8 }}>
-                            <Tooltip title="查看主页">
-                              <Button
-                                type="text"
-                                size="small"
-                                icon={<GlobalOutlined />}
-                                onClick={() => window.open(plugin.homepage)}
-                                style={{ padding: 0, height: 'auto' }}
-                              >
-                                插件主页
-                              </Button>
-                            </Tooltip>
-                          </div>
-                        )}
-                      </div>
-                    }
-                  />
-                </Card>
-              ))}
-            </Flex>
-          )}
-        </Card>
-
-        {/* 安装插件弹窗 */}
         <Modal
           title="安装插件"
           open={installModal}

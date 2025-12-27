@@ -61,7 +61,7 @@ const Network: React.FC = () => {
         setSelectedRequest(request);
       }
     },
-    [filteredRequests]
+    [filteredRequests],
   );
 
   // Get selected ID for waterfall
@@ -75,7 +75,14 @@ const Network: React.FC = () => {
   }, [selectedRequest]);
 
   return (
-    <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
+    <Layout
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        background: 'transparent',
+      }}
+    >
       {/* Toolbar */}
       <div
         style={{

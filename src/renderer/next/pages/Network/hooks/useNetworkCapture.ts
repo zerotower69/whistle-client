@@ -27,20 +27,20 @@ export const useNetworkCapture = () => {
             if (req.id === data.id) {
               const update = data.update;
               const newReq = { ...req, ...update };
-              
+
               // Handle nested timing update if it exists
               if (update.timing) {
                 newReq.timing = { ...req.timing, ...update.timing };
               }
-              
+
               // Handle dot notation if any (e.g. 'timing.total')
-              Object.keys(update).forEach(key => {
+              Object.keys(update).forEach((key) => {
                 if (key.includes('.')) {
                   const [parent, child] = key.split('.');
                   if (parent === 'timing' && child) {
                     newReq.timing = {
                       ...newReq.timing,
-                      [child]: update[key]
+                      [child]: update[key],
                     };
                   }
                 }
@@ -76,4 +76,3 @@ export const useNetworkCapture = () => {
     clearRequests,
   };
 };
-
