@@ -4,6 +4,9 @@ import { ConfigProvider, theme } from 'antd';
 import App from './App';
 import './index.css';
 
+// Set overscroll behavior on body
+document.body.style.overscrollBehaviorX = 'none';
+
 // Detect system theme
 const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
 

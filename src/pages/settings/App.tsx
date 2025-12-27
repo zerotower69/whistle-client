@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import {
   Form,
   Input,
@@ -28,6 +28,7 @@ const App: React.FC = () => {
   const [form] = Form.useForm<SettingsFormValues>();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [messageApi, contextHolder] = message.useMessage();
+  const portInputRef = useRef<any>(null);
 
   useEffect(() => {
     const { ipcRenderer } = window.require('electron');
@@ -54,10 +55,9 @@ const App: React.FC = () => {
 
       // Focus on port input
       setTimeout(() => {
-        const portInput = document.getElementById('port');
-        if (portInput) {
-          (portInput as HTMLInputElement).select();
-          portInput.focus();
+        if (portInputRef.current) {
+          portInputRef.current.select();
+          portInputRef.current.focus();
         }
       }, 100);
     };
@@ -103,7 +103,6 @@ const App: React.FC = () => {
       const portNum = parseInt(port, 10);
       if (!(portNum > 0 && portNum < 65536)) {
         messageApi.error('Please input the correct port');
-        form.getFieldInstance('port')?.focus();
         return;
       }
     }
@@ -113,7 +112,6 @@ const App: React.FC = () => {
       const socksPortNum = parseInt(socksPort, 10);
       if (!(socksPortNum > 0 && socksPortNum < 65536)) {
         messageApi.error('Please input the correct socks port');
-        form.getFieldInstance('socksPort')?.focus();
         return;
       }
     }
@@ -121,21 +119,18 @@ const App: React.FC = () => {
     // Validate host
     if (/\s/.test(host)) {
       messageApi.error('Bound host cannot have spaces');
-      form.getFieldInstance('host')?.focus();
       return;
     }
 
     // Validate username
     if (/\s/.test(username)) {
       messageApi.error('Username cannot have spaces');
-      form.getFieldInstance('username')?.focus();
       return;
     }
 
     // Validate password
     if (/\s/.test(password)) {
       messageApi.error('Password cannot have spaces');
-      form.getFieldInstance('password')?.focus();
       return;
     }
 
@@ -182,6 +177,7 @@ const App: React.FC = () => {
           wrapperCol={{ span: 17 }}
         >
           <Input
+            ref={portInputRef}
             id="port"
             type="number"
             placeholder="8888"

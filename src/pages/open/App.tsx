@@ -30,7 +30,7 @@ const App: React.FC = () => {
     }
     
     // Auto-redirect to whistle protocol
-    location.href = clientUrl;
+    window.location.assign(clientUrl);
   }, []);
 
   const handleOpenClient = () => {
@@ -41,11 +41,11 @@ const App: React.FC = () => {
       clientUrl = `whistle://client?dataUrl=${url}`;
     }
     
-    location.href = clientUrl;
+    window.location.assign(clientUrl);
   };
 
   const handleDownloadCA = () => {
-    location.href = '/cgi-bin/rootca';
+    window.location.assign('/cgi-bin/rootca');
   };
 
   return (

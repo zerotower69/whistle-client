@@ -46,6 +46,8 @@ export default defineConfig({
   },
   build: {
     outDir: '../public',
+    // emptyOutDir: false is necessary because public/ contains files used by lib/
+    // that should not be deleted (base.js, original .png files)
     emptyOutDir: false,
     rollupOptions: {
       input: {
