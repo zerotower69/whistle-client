@@ -27,7 +27,7 @@ body {
   padding: 0 12px;
   height: 40px !important;
   line-height: 40px !important;
-  background: #fff;
+  background: var(--antd-color-bg-container, #fff);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
 }
 
@@ -65,7 +65,7 @@ body {
   flex: 1;
   margin: 0;
   padding: 12px;
-  background: #fff;
+  background: transparent;
   border-radius: 0;
   overflow: auto;
 }

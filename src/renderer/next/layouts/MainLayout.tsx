@@ -134,8 +134,10 @@ const MainLayout: React.FC = () => {
 
     if (checked) {
       document.documentElement.classList.add('dark');
+      document.documentElement.setAttribute('data-theme', 'dark');
     } else {
       document.documentElement.classList.remove('dark');
+      document.documentElement.setAttribute('data-theme', 'light');
     }
     // 发送自定义事件通知 App.tsx 同步主题
     window.dispatchEvent(new CustomEvent('theme-change', { detail: checked ? 'dark' : 'light' }));
@@ -180,7 +182,7 @@ const MainLayout: React.FC = () => {
           onCollapse={setCollapsed}
           trigger={null}
           className="main-sider"
-          theme="light"
+          theme={isDarkMode ? 'dark' : 'light'}
           width={160}
           collapsedWidth={48}
         >

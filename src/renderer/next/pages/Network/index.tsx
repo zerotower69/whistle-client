@@ -75,13 +75,13 @@ const Network: React.FC = () => {
   }, [selectedRequest]);
 
   return (
-    <Layout style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <Layout style={{ height: '100%', display: 'flex', flexDirection: 'column', background: 'transparent' }}>
       {/* Toolbar */}
       <div
         style={{
           padding: '8px 16px',
-          borderBottom: '1px solid #f0f0f0',
-          backgroundColor: '#fff',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
+          backgroundColor: 'transparent',
         }}
       >
         <Toolbar

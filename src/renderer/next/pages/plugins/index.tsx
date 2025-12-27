@@ -484,9 +484,9 @@ const Plugins: React.FC = () => {
             </Col>
             <Col span={6}>
               <Card style={{ height: '100%' }}>
-                <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 14, marginBottom: 4 }}>
+                <Text type="secondary" style={{ fontSize: 14, display: 'block', marginBottom: 4 }}>
                   镜像源
-                </div>
+                </Text>
                 <div style={{ display: 'flex', alignItems: 'center', height: 38 }}>
                   <GlobalOutlined style={{ color: '#722ed1', fontSize: 24, marginRight: 8 }} />
                   <Select
@@ -814,9 +814,9 @@ whistle.vase`}
                             v{plugin.version}
                           </Tag>
                         </div>
-                        <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 13 }}>
+                        <Text type="secondary" style={{ fontSize: 13 }}>
                           {plugin.description}
-                        </div>
+                        </Text>
                       </div>
                       <Button icon={<DownloadOutlined />} size="small">
                         安装
@@ -830,34 +830,33 @@ whistle.vase`}
                 <Empty description="未找到相关插件" />
               </div>
             ) : (
-              <div style={{ padding: '20px', color: 'rgba(0, 0, 0, 0.45)', textAlign: 'center' }}>
-                输入关键词并回车开始搜索
+              <div style={{ padding: '20px', textAlign: 'center' }}>
+                <Text type="secondary">输入关键词并回车开始搜索</Text>
               </div>
             )}
           </div>
           <div
             style={{
               padding: '12px 20px',
-              background: '#fafafa',
-              borderTop: '1px solid #f0f0f0',
+              background: 'transparent',
+              borderTop: '1px solid rgba(0, 0, 0, 0.06)',
               fontSize: 12,
-              color: 'rgba(0, 0, 0, 0.45)',
               display: 'flex',
               justifyContent: 'space-between',
             }}
           >
             <Space size="large">
-              <span>
+              <Text type="secondary">
                 <Tag>↵</Tag> 搜索
-              </span>
-              <span>
+              </Text>
+              <Text type="secondary">
                 <Tag>↑↓</Tag> 选择
-              </span>
-              <span>
+              </Text>
+              <Text type="secondary">
                 <Tag>ESC</Tag> 关闭
-              </span>
+              </Text>
             </Space>
-            <span>Powered by npm registry</span>
+            <Text type="secondary">Powered by npm registry</Text>
           </div>
         </Modal>
       </div>
