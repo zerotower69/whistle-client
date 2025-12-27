@@ -5,8 +5,8 @@ import { useState, useEffect } from 'react';
  * @returns boolean indicating if dark mode is active
  */
 export const useTheme = (): boolean => {
-  const [isDarkMode, setIsDarkMode] = useState(() => 
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+  const [isDarkMode, setIsDarkMode] = useState(
+    () => window.matchMedia('(prefers-color-scheme: dark)').matches
   );
 
   useEffect(() => {

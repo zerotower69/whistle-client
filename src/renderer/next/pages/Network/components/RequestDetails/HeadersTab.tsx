@@ -30,7 +30,7 @@ const HeadersTab: React.FC<HeadersTabProps> = ({ request }) => {
             </Descriptions.Item>
           ))
         ) : (
-          <Descriptions.Item label="无">No request headers</Descriptions.Item>
+          <Descriptions.Item label="无数据">无请求头</Descriptions.Item>
         )}
       </Descriptions>
 
@@ -43,7 +43,7 @@ const HeadersTab: React.FC<HeadersTabProps> = ({ request }) => {
             </Descriptions.Item>
           ))
         ) : (
-          <Descriptions.Item label="无">No response headers</Descriptions.Item>
+          <Descriptions.Item label="无数据">无响应头</Descriptions.Item>
         )}
       </Descriptions>
     </div>
