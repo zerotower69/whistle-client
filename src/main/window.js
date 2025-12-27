@@ -52,8 +52,6 @@ export const showWindow = (name) => {
   }
 };
 
-
-
 /**
  * 加载主应用页面
  * @param {BrowserWindow} win 窗口实例
@@ -73,7 +71,7 @@ const loadMainPage = (win) => {
  */
 export const openMainWindow = (sender) => {
   let win = ctx.getWin();
-  
+
   // 如果是从已有的窗口（如 open 页面）发起的请求，且主窗口还未创建或已销毁
   if (sender && (!win || win.isDestroyed() || win.webContents === sender)) {
     const senderWin = BrowserWindow.fromWebContents(sender);
@@ -105,7 +103,7 @@ export const openMainWindow = (sender) => {
       sandbox: false,
     },
   });
-  
+
   win.onBeforeFindInPage = function (keyword, opts) {
     const prev = !!opts && !opts.forward;
     keyword = String(keyword).replace(/"/g, '\\"');
@@ -198,7 +196,7 @@ export const createWindow = () => {
   ctx.setWin(win);
   win.setMenu(null);
   win.maximize();
-  
+
   win.on('ready-to-show', () => {
     showWin(win);
   });

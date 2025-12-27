@@ -409,31 +409,40 @@ const Plugins: React.FC = () => {
   return (
     <div>
       {contextHolder}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 12 }}>
-          <Space size="small">
-            <Tooltip title="全局启用/禁用所有插件">
-              <Switch
-                checkedChildren="已启用"
-                unCheckedChildren="已禁用"
-                checked={globalPluginsEnabled}
-                onChange={handleToggleAllPlugins}
-              />
-            </Tooltip>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          alignItems: 'center',
+          marginBottom: 12,
+        }}
+      >
+        <Space size="small">
+          <Tooltip title="全局启用/禁用所有插件">
+            <Switch
+              checkedChildren="已启用"
+              unCheckedChildren="已禁用"
+              checked={globalPluginsEnabled}
+              onChange={handleToggleAllPlugins}
+            />
+          </Tooltip>
 
-            <Button icon={<ReloadOutlined />} onClick={handleRefreshPlugins} loading={loading}>
-              刷新
+          <Button icon={<ReloadOutlined />} onClick={handleRefreshPlugins} loading={loading}>
+            刷新
+          </Button>
+
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setInstallModal(true)}>
+            安装插件
+          </Button>
+
+          <Tooltip
+            title={`搜索插件 (${window.navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'})`}
+          >
+            <Button icon={<SearchOutlined />} onClick={() => setSearchModalVisible(true)}>
+              搜索插件
             </Button>
-
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => setInstallModal(true)}>
-              安装插件
-            </Button>
-
-            <Tooltip title={`搜索插件 (${window.navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'})`}>
-              <Button icon={<SearchOutlined />} onClick={() => setSearchModalVisible(true)}>
-                搜索插件
-              </Button>
-            </Tooltip>
-          </Space>
+          </Tooltip>
+        </Space>
       </div>
 
       <div>
@@ -600,11 +609,12 @@ const Plugins: React.FC = () => {
                           ) : (
                             <Tag color="default">已禁用</Tag>
                           )}
-                          {plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion && (
-                            <Tag color="warning" icon={<ExclamationCircleOutlined />}>
-                              有更新
-                            </Tag>
-                          )}
+                          {plugin.latestVersion &&
+                            plugin.latestVersion !== plugin.installedVersion && (
+                              <Tag color="warning" icon={<ExclamationCircleOutlined />}>
+                                有更新
+                              </Tag>
+                            )}
                         </Space>
                       </div>
                     }
@@ -616,10 +626,13 @@ const Plugins: React.FC = () => {
                         <div className="plugin-meta">
                           <Space split={<Divider type="vertical" />}>
                             <Text type="secondary">版本: {plugin.installedVersion}</Text>
-                            {plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion && (
-                              <Text type="warning">最新: {plugin.latestVersion}</Text>
+                            {plugin.latestVersion &&
+                              plugin.latestVersion !== plugin.installedVersion && (
+                                <Text type="warning">最新: {plugin.latestVersion}</Text>
+                              )}
+                            {plugin.lastUpdated && (
+                              <Text type="secondary">更新: {plugin.lastUpdated}</Text>
                             )}
-                            {plugin.lastUpdated && <Text type="secondary">更新: {plugin.lastUpdated}</Text>}
                             {plugin.author && <Text type="secondary">作者: {plugin.author}</Text>}
                           </Space>
                         </div>
@@ -760,17 +773,27 @@ whistle.vase`}
                       setInstallModal(true);
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                      }}
+                    >
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 4 }}>
                           {plugin.name}
-                          <Tag color="blue" style={{ marginLeft: 8 }}>v{plugin.version}</Tag>
+                          <Tag color="blue" style={{ marginLeft: 8 }}>
+                            v{plugin.version}
+                          </Tag>
                         </div>
                         <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 13 }}>
                           {plugin.description}
                         </div>
                       </div>
-                      <Button icon={<DownloadOutlined />} size="small">安装</Button>
+                      <Button icon={<DownloadOutlined />} size="small">
+                        安装
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -797,9 +820,15 @@ whistle.vase`}
             }}
           >
             <Space size="large">
-              <span><Tag size="small">↵</Tag> 搜索</span>
-              <span><Tag size="small">↑↓</Tag> 选择</span>
-              <span><Tag size="small">ESC</Tag> 关闭</span>
+              <span>
+                <Tag size="small">↵</Tag> 搜索
+              </span>
+              <span>
+                <Tag size="small">↑↓</Tag> 选择
+              </span>
+              <span>
+                <Tag size="small">ESC</Tag> 关闭
+              </span>
             </Space>
             <span>Powered by npm registry</span>
           </div>

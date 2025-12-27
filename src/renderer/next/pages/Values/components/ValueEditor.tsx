@@ -33,7 +33,7 @@ const ValueEditor: React.FC<ValueEditorProps> = ({
 }) => {
   const editorRef = useRef<any>(null);
   const [isDarkMode, setIsDarkMode] = React.useState(
-    window.matchMedia('(prefers-color-scheme: dark)').matches
+    window.matchMedia('(prefers-color-scheme: dark)').matches,
   );
 
   // Listen for theme changes
