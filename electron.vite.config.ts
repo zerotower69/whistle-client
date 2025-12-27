@@ -1,6 +1,8 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
+import UnoCSS from 'unocss/vite';
+import { presetUno, presetIcons, transformerDirectives, transformerVariantGroup } from 'unocss';
 
 export default defineConfig({
   main: {
@@ -24,7 +26,26 @@ export default defineConfig({
   },
   renderer: {
     root: 'src/renderer',
-    plugins: [react()],
+    plugins: [
+      react(),
+      UnoCSS({
+        presets: [
+          presetUno(),
+          presetIcons({
+            scale: 1.2,
+            warn: true,
+            extraProperties: {
+              'display': 'inline-block',
+              'vertical-align': 'middle',
+            },
+          }),
+        ],
+        transformers: [
+          transformerDirectives(),
+          transformerVariantGroup(),
+        ],
+      }),
+    ],
     resolve: {
       alias: {
         '@': resolve(__dirname, 'src/renderer'),
