@@ -1,12 +1,13 @@
 import { RouterProvider } from 'react-router-dom';
 import router from './router';
 import { ConfigProvider, theme, App as AntdApp } from 'antd';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { setNavigateRef } from './utils/navigation';
 import ErrorBoundary from './components/ErrorBoundary';
+import { useTheme } from '@/next/contexts/ThemeContext';
 
 function App() {
-  const [isDark, setIsDark] = useState(false);
+  const { isDark } = useTheme();
 
   useEffect(() => {
     // Setup navigation reference for window.showWhistleWebUI()
@@ -15,28 +16,6 @@ function App() {
       router.navigate(path);
     };
     setNavigateRef(navigate);
-
-    const { ipcRenderer } = window.require('electron');
-    const initTheme = async () => {
-      const savedTheme = await ipcRenderer.invoke('get-setting', 'theme-mode');
-      const dark = savedTheme === 'dark';
-      setIsDark(dark);
-      if (dark) {
-        document.documentElement.classList.add('dark');
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-        document.documentElement.setAttribute('data-theme', 'light');
-      }
-    };
-    initTheme();
-
-    // 监听主题切换事件
-    const handleThemeChange = (e: any) => {
-      setIsDark(e.detail === 'dark');
-    };
-    window.addEventListener('theme-change', handleThemeChange);
-    return () => window.removeEventListener('theme-change', handleThemeChange);
   }, []);
 
   return (

@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from 'react';
 import { Select, Button, Space, message, Empty } from 'antd';
 import { FullscreenOutlined, SaveOutlined } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
+import { useTheme } from '@/next/contexts/ThemeContext';
 import type { ValueItem } from '../types';
 
 interface ValueEditorProps {
@@ -32,20 +33,7 @@ const ValueEditor: React.FC<ValueEditorProps> = ({
   onContentChange,
 }) => {
   const editorRef = useRef<any>(null);
-  const [isDarkMode, setIsDarkMode] = React.useState(
-    window.matchMedia('(prefers-color-scheme: dark)').matches,
-  );
-
-  // Listen for theme changes
-  useEffect(() => {
-    const handleThemeChange = (e: Event) => {
-      const customEvent = e as CustomEvent<string>;
-      setIsDarkMode(customEvent.detail === 'dark');
-    };
-
-    window.addEventListener('theme-change', handleThemeChange);
-    return () => window.removeEventListener('theme-change', handleThemeChange);
-  }, []);
+  const { isDark: isDarkMode } = useTheme();
 
   const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;

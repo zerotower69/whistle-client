@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { Layout, Menu, Switch, Button, theme, App } from 'antd';
 import LogViewer from '../components/LogViewer';
+import { useTheme } from '@/next/contexts/ThemeContext';
 import {
   GlobalOutlined,
   FileTextOutlined,
@@ -23,7 +24,7 @@ const { Header, Sider, Content } = Layout;
  */
 const MainLayout: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDark: isDarkMode, setIsDark } = useTheme();
   const [proxyEnabled, setProxyEnabled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -43,10 +44,6 @@ const MainLayout: React.FC = () => {
             navigate(lastTab);
           }
         }
-
-        // 加载主题
-        const savedTheme = await ipcRenderer.invoke('get-setting', 'theme-mode');
-        setIsDarkMode(savedTheme === 'dark');
 
         // 加载代理状态
         const status = await ipcRenderer.invoke('get-proxy-status');
@@ -124,23 +121,8 @@ const MainLayout: React.FC = () => {
   };
 
   // 切换主题
-  const handleThemeToggle = async (checked: boolean) => {
-    setIsDarkMode(checked);
-    const { ipcRenderer } = window.require('electron');
-    await ipcRenderer.invoke('set-setting', {
-      key: 'theme-mode',
-      value: checked ? 'dark' : 'light',
-    });
-
-    if (checked) {
-      document.documentElement.classList.add('dark');
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      document.documentElement.setAttribute('data-theme', 'light');
-    }
-    // 发送自定义事件通知 App.tsx 同步主题
-    window.dispatchEvent(new CustomEvent('theme-change', { detail: checked ? 'dark' : 'light' }));
+  const handleThemeToggle = (checked: boolean) => {
+    setIsDark(checked);
   };
 
   // 切换代理开关

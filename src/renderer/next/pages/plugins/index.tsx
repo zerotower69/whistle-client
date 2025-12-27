@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import './index.css';
 import { useWhistleSync } from '../../hooks/useWhistleSync';
+import { useTheme } from '@/next/contexts/ThemeContext';
 import {
   Card,
   Button,
@@ -39,6 +40,7 @@ import {
   ClockCircleOutlined,
   GlobalOutlined,
 } from '@ant-design/icons';
+import { formatPluginName } from '@/next/utils/format';
 
 const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
@@ -78,6 +80,9 @@ const DEFAULT_REGISTRIES = [
 const Plugins: React.FC = () => {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const { isDark } = useTheme();
+
+  const iframeRefs = useRef<Map<string, HTMLIFrameElement>>(new Map());
 
   // 状态管理
   const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([]);
@@ -91,6 +96,7 @@ const Plugins: React.FC = () => {
   const [registryHistory, setRegistryHistory] = useState<string[]>([]);
   const [globalPluginsEnabled, setGlobalPluginsEnabled] = useState(true);
   const [checkingUpdate, setCheckingUpdate] = useState<Record<string, boolean>>({});
+  const [whistlePort, setWhistlePort] = useState<number>(8899);
 
   // Tabs 状态管理
   const [activeTab, setActiveTab] = useState<string>('home');
@@ -119,6 +125,43 @@ const Plugins: React.FC = () => {
     setLoading(false);
   }, []);
 
+  // ⭐ 同步主题到所有 iframe
+  const syncThemeToAllIframes = useCallback((theme: string) => {
+    iframeRefs.current.forEach((iframe) => {
+      if (iframe?.contentWindow) {
+        iframe.contentWindow.postMessage(
+          {
+            type: 'theme-change',
+            theme: theme,
+          },
+          '*',
+        );
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    syncThemeToAllIframes(isDark ? 'dark' : 'light');
+  }, [isDark]);
+
+  // ⭐ iframe 加载完成后发送主题
+  const handleIframeLoad = (key: string, iframe: HTMLIFrameElement | null) => {
+    if (!iframe) return;
+
+    iframeRefs.current.set(key, iframe);
+
+    // 延迟发送，确保 iframe 内容已加载
+    setTimeout(() => {
+      iframe.contentWindow?.postMessage(
+        {
+          type: 'theme-change',
+          theme: isDark ? 'dark' : 'light',
+        },
+        '*',
+      );
+    }, 100);
+  };
+
   // 使用自定义 Hook 处理同步
   const { waitForPluginUpdate, cancelWaiting } = useWhistleSync(handlePluginsList);
 
@@ -138,10 +181,59 @@ const Plugins: React.FC = () => {
         console.error('Failed to load saved registry:', error);
       }
     };
-    loadSavedRegistry();
 
+    // 获取 whistle 端口
+    const fetchWhistleOptions = async () => {
+      try {
+        const options = await ipcRenderer.invoke('get-whistle-options');
+        if (options && options.port) {
+          setWhistlePort(options.port);
+        }
+      } catch (error) {
+        console.error('Failed to fetch whistle options:', error);
+      }
+    };
+
+    loadSavedRegistry();
+    fetchWhistleOptions();
     loadInstalledPlugins();
   }, []);
+
+  // 当主题变化时，同步更新所有已打开插件 Tab 的 URL
+  useEffect(() => {
+    setOpenPluginTabs((prev) => {
+      let changed = false;
+      const newTabs = prev.map((tab) => {
+        try {
+          const url = new URL(tab.url);
+          const targetTheme = isDark ? 'dark' : 'light';
+          if (url.searchParams.get('theme') !== targetTheme) {
+            url.searchParams.set('theme', targetTheme);
+            changed = true;
+            return { ...tab, url: url.toString() };
+          }
+        } catch (e) {
+          console.error('Invalid URL in tab:', tab.url);
+        }
+        return tab;
+      });
+      return changed ? newTabs : prev;
+    });
+
+    // 同时尝试通过 postMessage 通知 iframe (如果插件支持)
+    openPluginTabs.forEach((tab) => {
+      const iframe = document.getElementById(`plugin-iframe-${tab.key}`) as HTMLIFrameElement;
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
+          {
+            type: 'theme-change',
+            theme: isDark ? 'dark' : 'light',
+          },
+          '*',
+        );
+      }
+    });
+  }, [isDark]);
 
   // 监听快捷键 Cmd+K / Ctrl+K
   useEffect(() => {
@@ -154,6 +246,47 @@ const Plugins: React.FC = () => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // 监听来自插件 iframe 的消息
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const { data, source } = event;
+      if (!data || typeof data !== 'object') return;
+
+      // 处理 whistle 插件的配置页面请求
+      // 当插件页面发送 onWhistlePluginOptionModalReady 时，自动跳转到配置页
+      if (data.type === 'onWhistlePluginOptionModalReady') {
+        // 找到发送消息的 iframe
+        const iframes = document.querySelectorAll('iframe');
+        let targetTabKey = '';
+
+        for (const iframe of iframes) {
+          if (iframe.contentWindow === source) {
+            const id = iframe.id;
+            if (id.startsWith('plugin-iframe-')) {
+              targetTabKey = id.replace('plugin-iframe-', '');
+              break;
+            }
+          }
+        }
+
+        if (targetTabKey) {
+          // 提取插件名称 (tabKey 格式为 plugin:name)
+          const pluginName = targetTabKey.replace('plugin:', '');
+          const themeParam = isDark ? 'dark' : 'light';
+          const optionsUrl = `http://local.whistlejs.com:${whistlePort}/plugin.${pluginName}/options.html?theme=${themeParam}`;
+
+          // 更新对应 Tab 的 URL
+          setOpenPluginTabs((prev) =>
+            prev.map((tab) => (tab.key === targetTabKey ? { ...tab, url: optionsUrl } : tab)),
+          );
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [whistlePort, isDark]);
 
   const loadInstalledPlugins = () => {
     setLoading(true);
@@ -421,13 +554,18 @@ const Plugins: React.FC = () => {
     }
 
     // 否则使用默认地址
-    const DEFAULT_WHISTLE_PORT = 8899;
-    return `http://local.whistlejs.com:${DEFAULT_WHISTLE_PORT}/plugin.${plugin.name}/`;
+    const themeParam = isDark ? 'dark' : 'light';
+    return `http://local.whistlejs.com:${whistlePort}/plugin.${plugin.name}/?theme=${themeParam}`;
+  };
+
+  const getPluginOptionsUIURL = (plugin: Plugin): string => {
+    const themeParam = isDark ? 'dark' : 'light';
+    return `http://local.whistlejs.com:${whistlePort}/plugin.${plugin.name.replace(/:+$/, '')}/options.html?theme=${themeParam}`;
   };
 
   // 打开插件 Tab
   const handleOpenPluginTab = (plugin: Plugin) => {
-    const tabKey = `plugin-${plugin.name}`;
+    const tabKey = formatPluginName(plugin.name);
 
     // 如果已打开，直接切换
     if (openPluginTabs.some((tab) => tab.key === tabKey)) {
@@ -436,15 +574,42 @@ const Plugins: React.FC = () => {
     }
 
     // 构造插件 UI 地址
-    const url = getPluginHomepage(plugin);
+    const url = getPluginOptionsUIURL(plugin);
 
     // 新增 Tab
     setOpenPluginTabs((prev) => [
       ...prev,
       {
         key: tabKey,
-        name: plugin.name,
+        name: plugin.name.replace(/:+$/, ''), // 去掉结尾的冒号
         url: url,
+      },
+    ]);
+
+    setActiveTab(tabKey);
+  };
+
+  // 打开插件配置页
+  const handleOpenPluginOptions = (plugin: Plugin) => {
+    const tabKey = formatPluginName(plugin.name);
+    const optionsUrl = getPluginOptionsUIURL(plugin);
+
+    // 如果已打开，更新 URL 并切换
+    if (openPluginTabs.some((tab) => tab.key === tabKey)) {
+      setOpenPluginTabs((prev) =>
+        prev.map((tab) => (tab.key === tabKey ? { ...tab, url: optionsUrl } : tab)),
+      );
+      setActiveTab(tabKey);
+      return;
+    }
+
+    // 新增 Tab
+    setOpenPluginTabs((prev) => [
+      ...prev,
+      {
+        key: tabKey,
+        name: plugin.name.replace(/:+$/, ''),
+        url: optionsUrl,
       },
     ]);
 
@@ -471,9 +636,9 @@ const Plugins: React.FC = () => {
   };
 
   const installedCount = installedPlugins.length;
-  const enabledCount = installedPlugins.filter((p) => p.enabled).length;
+  const enabledCount = installedPlugins.filter((p: any) => p.enabled).length;
   const availableUpdates = installedPlugins.filter(
-    (p) => p.latestVersion && p.latestVersion !== p.installedVersion,
+    (p: any) => p.latestVersion && p.latestVersion !== p.installedVersion,
   ).length;
 
   return (
@@ -661,7 +826,12 @@ const Plugins: React.FC = () => {
                                 disabled={!globalPluginsEnabled}
                               />,
                               <Tooltip key="settings" title="插件设置">
-                                <Button size="small" icon={<SettingOutlined />} type="text" />
+                                <Button
+                                  size="small"
+                                  icon={<SettingOutlined />}
+                                  type="text"
+                                  onClick={() => handleOpenPluginOptions(plugin)}
+                                />
                               </Tooltip>,
                               <Button
                                 key="check-update"
@@ -790,6 +960,8 @@ const Plugins: React.FC = () => {
             children: (
               <div className="plugin-iframe-container">
                 <iframe
+                  ref={(el) => handleIframeLoad(tab.key, el)} // ⭐ 保存引用
+                  id={`plugin-iframe-${tab.key}`}
                   src={tab.url}
                   style={{
                     width: '100%',

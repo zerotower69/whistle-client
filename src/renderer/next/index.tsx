@@ -4,8 +4,7 @@ import App from './App.tsx';
 import './styles/index.css';
 import 'virtual:uno.css';
 import { loader } from '@monaco-editor/react';
-import * as monaco from 'monaco-editor';
-
+import * as monaco from 'monaco-editor';import { ThemeProvider } from '@/next/contexts/ThemeContext';
 import { initGlobalNavigation } from './utils/navigation';
 
 // Configure Monaco Editor for Electron
@@ -37,6 +36,8 @@ initGlobalNavigation();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <ThemeProvider>
+      <App />
+    </ThemeProvider>
   </React.StrictMode>,
 );

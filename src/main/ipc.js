@@ -131,6 +131,9 @@ const ipcHandlers = {
           return null;
         }
       },
+      'get-whistle-options': async () => {
+        return ctx.getOptions();
+      },
       'set-setting': async (event, { key, value }) => {
         try {
           storage.setProperty(key, value);
