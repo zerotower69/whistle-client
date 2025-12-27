@@ -34,7 +34,7 @@ const MainLayout: React.FC = () => {
     const loadSettings = async () => {
       try {
         const { ipcRenderer } = window.require('electron');
-        
+
         // 加载 Tab
         const lastTab = await ipcRenderer.invoke('get-setting', 'lastSelectedTab');
         if (lastTab && lastTab !== location.pathname) {
@@ -117,8 +117,11 @@ const MainLayout: React.FC = () => {
   const handleThemeToggle = async (checked: boolean) => {
     setIsDarkMode(checked);
     const { ipcRenderer } = window.require('electron');
-    await ipcRenderer.invoke('set-setting', { key: 'theme-mode', value: checked ? 'dark' : 'light' });
-    
+    await ipcRenderer.invoke('set-setting', {
+      key: 'theme-mode',
+      value: checked ? 'dark' : 'light',
+    });
+
     if (checked) {
       document.documentElement.classList.add('dark');
     } else {
@@ -164,92 +167,108 @@ const MainLayout: React.FC = () => {
           width={160}
           collapsedWidth={48}
         >
-        <div
-          style={{
-            height: 40,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '0 8px',
-            borderBottom: '1px solid rgba(0,0,0,0.06)'
-          }}
-        >
-          {!collapsed && (
-            <div className="logo" style={{ fontSize: 14 }}>
-              <ApiOutlined className="logo-icon" style={{ fontSize: 18 }} />
-              <span>Whistle</span>
+          <div
+            style={{
+              height: 40,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '0 8px',
+              borderBottom: '1px solid rgba(0,0,0,0.06)',
+            }}
+          >
+            {!collapsed && (
+              <div className="logo" style={{ fontSize: 14 }}>
+                <ApiOutlined className="logo-icon" style={{ fontSize: 18 }} />
+                <span>Whistle</span>
+              </div>
+            )}
+            {collapsed && <ApiOutlined className="logo-icon" style={{ fontSize: 18 }} />}
+          </div>
+
+          <Menu
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            inlineIndent={12}
+            items={menuItems.map((item) => ({
+              key: item.key,
+              icon: item.icon,
+              label: item.label,
+            }))}
+            onClick={handleMenuClick}
+          />
+        </Sider>
+
+        <Layout>
+          {/* 顶部导航栏 */}
+          <Header
+            className="main-header"
+            style={{ background: colorBgContainer, height: 40, padding: '0 12px' }}
+          >
+            <div className="main-header-left">
+              <Button
+                type="text"
+                icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
+                onClick={() => setCollapsed(!collapsed)}
+                style={{
+                  fontSize: '14px',
+                  width: 32,
+                  height: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              />
             </div>
-          )}
-          {collapsed && <ApiOutlined className="logo-icon" style={{ fontSize: 18 }} />}
-        </div>
 
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          inlineIndent={12}
-          items={menuItems.map((item) => ({
-            key: item.key,
-            icon: item.icon,
-            label: item.label,
-          }))}
-          onClick={handleMenuClick}
-        />
-      </Sider>
+            <div className="main-header-center">
+              <span style={{ fontSize: 14, fontWeight: 500 }}>
+                {menuItems.find((item) => item.path === location.pathname)?.label ||
+                  'Whistle Client'}
+              </span>
+            </div>
 
-      <Layout>
-        {/* 顶部导航栏 */}
-        <Header className="main-header" style={{ background: colorBgContainer, height: 40, padding: '0 12px' }}>
-          <div className="main-header-left">
-            <Button
-              type="text"
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
-              onClick={() => setCollapsed(!collapsed)}
-              style={{ fontSize: '14px', width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-            />
-          </div>
+            <div className="main-header-right">
+              {/* 代理开关 */}
+              <Switch
+                size="small"
+                checkedChildren="ON"
+                unCheckedChildren="OFF"
+                checked={proxyEnabled}
+                onChange={handleProxyToggle}
+              />
 
-          <div className="main-header-center">
-            <span style={{ fontSize: 14, fontWeight: 500 }}>
-              {menuItems.find((item) => item.path === location.pathname)?.label || 'Whistle Client'}
-            </span>
-          </div>
+              {/* 设置按钮 */}
+              <Button
+                type="text"
+                size="small"
+                icon={<SettingOutlined />}
+                onClick={handleOpenSettings}
+              />
 
-          <div className="main-header-right">
-            {/* 代理开关 */}
-            <Switch
-              size="small"
-              checkedChildren="ON"
-              unCheckedChildren="OFF"
-              checked={proxyEnabled}
-              onChange={handleProxyToggle}
-            />
+              {/* 主题切换 */}
+              <Switch
+                size="small"
+                checkedChildren={<BulbOutlined style={{ fontSize: 12 }} />}
+                unCheckedChildren={<BulbOutlined style={{ fontSize: 12 }} />}
+                checked={isDarkMode}
+                onChange={handleThemeToggle}
+              />
+            </div>
+          </Header>
 
-            {/* 设置按钮 */}
-            <Button type="text" size="small" icon={<SettingOutlined />} onClick={handleOpenSettings} />
-
-            {/* 主题切换 */}
-            <Switch
-              size="small"
-              checkedChildren={<BulbOutlined style={{ fontSize: 12 }} />}
-              unCheckedChildren={<BulbOutlined style={{ fontSize: 12 }} />}
-              checked={isDarkMode}
-              onChange={handleThemeToggle}
-            />
-          </div>
-        </Header>
-
-        {/* 内容区域 */}
-        <Content className="main-layout-content">
-          {/* 子路由渲染 */}
-          <div className="main-content">
-            <Outlet />
-          </div>
-        </Content>
+          {/* 内容区域 */}
+          <Content className="main-layout-content">
+            {/* 子路由渲染 */}
+            <div className="main-content">
+              <Outlet />
+            </div>
+          </Content>
+        </Layout>
       </Layout>
-    </Layout>
-    <LogViewer />
-  </>
-);
+      <LogViewer />
+    </>
+  );
 };
 
 export default MainLayout;

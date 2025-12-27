@@ -3,11 +3,11 @@ import { useEffect, useRef } from 'react';
 /**
  * Whistle 状态同步 Hook
  * 用于在执行插件安装、卸载、开关等操作后，等待 Whistle 核心进程将最新的状态同步回渲染进程。
- * 
+ *
  * @param onPluginsUpdate 当收到最新的插件列表时的回调函数
  */
 export const useWhistleSync = (
-  onPluginsUpdate?: (pluginsMap: any, disabledAllPlugins?: boolean) => void
+  onPluginsUpdate?: (pluginsMap: any, disabledAllPlugins?: boolean) => void,
 ) => {
   const pendingUpdateResolver = useRef<(() => void) | null>(null);
   const callbackRef = useRef(onPluginsUpdate);
@@ -25,7 +25,7 @@ export const useWhistleSync = (
       if (callbackRef.current) {
         callbackRef.current(pluginsMap, disabledAllPlugins);
       }
-      
+
       // 如果有正在等待的 Promise，则将其 resolve
       if (pendingUpdateResolver.current) {
         pendingUpdateResolver.current();
@@ -34,7 +34,7 @@ export const useWhistleSync = (
     };
 
     ipcRenderer.on('plugins-list', handlePluginsList);
-    
+
     return () => {
       ipcRenderer.removeListener('plugins-list', handlePluginsList);
     };
@@ -47,7 +47,7 @@ export const useWhistleSync = (
   const waitForPluginUpdate = (timeout = 10000) => {
     return new Promise<void>((resolve) => {
       pendingUpdateResolver.current = resolve;
-      
+
       // 设置超时保护
       setTimeout(() => {
         if (pendingUpdateResolver.current === resolve) {

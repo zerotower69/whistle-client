@@ -25,7 +25,7 @@ const LogViewer: React.FC = () => {
       const savedVisible = await ipcRenderer.invoke('get-setting', 'log-viewer-visible');
       const savedMinimized = await ipcRenderer.invoke('get-setting', 'log-viewer-minimized');
       const savedFilter = await ipcRenderer.invoke('get-setting', 'log-viewer-filter');
-      
+
       if (savedVisible !== null) setVisible(!!savedVisible);
       if (savedMinimized !== null) setMinimized(!!savedMinimized);
       if (savedFilter !== null) setFilter(String(savedFilter));
@@ -90,7 +90,7 @@ const LogViewer: React.FC = () => {
       // 监听窗口大小变化
       const handleResize = () => fitAddon.fit();
       window.addEventListener('resize', handleResize);
-      
+
       return () => {
         window.removeEventListener('resize', handleResize);
       };
@@ -105,7 +105,7 @@ const LogViewer: React.FC = () => {
 
     const handleLog = (_: any, data: { level: string; message: string }) => {
       if (!visible || minimized) {
-        setUnreadCount(prev => prev + 1);
+        setUnreadCount((prev) => prev + 1);
       }
 
       if (xtermRef.current) {
@@ -113,10 +113,18 @@ const LogViewer: React.FC = () => {
         if (filter === 'all' || filter === data.level) {
           let color = '';
           switch (data.level) {
-            case 'error': color = '\x1b[31m'; break; // Red
-            case 'warn': color = '\x1b[33m'; break;  // Yellow
-            case 'info': color = '\x1b[32m'; break;  // Green
-            default: color = '\x1b[37m'; break;      // White
+            case 'error':
+              color = '\x1b[31m';
+              break; // Red
+            case 'warn':
+              color = '\x1b[33m';
+              break; // Yellow
+            case 'info':
+              color = '\x1b[32m';
+              break; // Green
+            default:
+              color = '\x1b[37m';
+              break; // White
           }
           xtermRef.current.writeln(`${color}${data.message}\x1b[0m`);
         }
@@ -126,11 +134,11 @@ const LogViewer: React.FC = () => {
     const handleHistory = (_: any, lines: string[]) => {
       if (xtermRef.current) {
         xtermRef.current.clear();
-        lines.forEach(line => {
+        lines.forEach((line) => {
           const isError = line.includes('[error]');
           const isWarn = line.includes('[warn]');
           const isInfo = line.includes('[info]');
-          
+
           let level = 'info';
           if (isError) level = 'error';
           else if (isWarn) level = 'warn';
@@ -180,10 +188,10 @@ const LogViewer: React.FC = () => {
     return (
       <div className="log-viewer-trigger">
         <Badge count={unreadCount} size="small">
-          <Button 
-            type="primary" 
-            shape="circle" 
-            icon={<div className="i-mdi:terminal w-6 h-6" />} 
+          <Button
+            type="primary"
+            shape="circle"
+            icon={<div className="i-mdi:terminal w-6 h-6" />}
             onClick={() => {
               setVisible(true);
               setMinimized(false);
@@ -205,10 +213,10 @@ const LogViewer: React.FC = () => {
         </div>
         <div className="header-actions">
           <Space size="small">
-            <Select 
-              size="small" 
-              value={filter} 
-              onChange={setFilter} 
+            <Select
+              size="small"
+              value={filter}
+              onChange={setFilter}
               style={{ width: 100 }}
               dropdownMatchSelectWidth={false}
             >
@@ -218,24 +226,43 @@ const LogViewer: React.FC = () => {
               <Option value="error">Error</Option>
             </Select>
             <Tooltip title="清空日志">
-              <Button size="small" type="text" icon={<div className="i-mdi:delete w-4 h-4" />} onClick={clearLogs} />
-            </Tooltip>
-            <Tooltip title="滚动到底部">
-              <Button size="small" type="text" icon={<div className="i-mdi:arrow-down w-4 h-4" />} onClick={scrollToBottom} />
-            </Tooltip>
-            <Tooltip title="最小化">
-              <Button 
-                size="small" 
-                type="text" 
-                icon={<div className="i-mdi:minus w-4 h-4" />} 
-                onClick={() => setMinimized(true)} 
+              <Button
+                size="small"
+                type="text"
+                icon={<div className="i-mdi:delete w-4 h-4" />}
+                onClick={clearLogs}
               />
             </Tooltip>
-            <Button size="small" type="text" icon={<div className="i-mdi:close w-4 h-4" />} onClick={toggleVisible} />
+            <Tooltip title="滚动到底部">
+              <Button
+                size="small"
+                type="text"
+                icon={<div className="i-mdi:arrow-down w-4 h-4" />}
+                onClick={scrollToBottom}
+              />
+            </Tooltip>
+            <Tooltip title="最小化">
+              <Button
+                size="small"
+                type="text"
+                icon={<div className="i-mdi:minus w-4 h-4" />}
+                onClick={() => setMinimized(true)}
+              />
+            </Tooltip>
+            <Button
+              size="small"
+              type="text"
+              icon={<div className="i-mdi:close w-4 h-4" />}
+              onClick={toggleVisible}
+            />
           </Space>
         </div>
       </div>
-      <div className="log-viewer-body" ref={terminalRef} style={{ display: minimized ? 'none' : 'block' }} />
+      <div
+        className="log-viewer-body"
+        ref={terminalRef}
+        style={{ display: minimized ? 'none' : 'block' }}
+      />
     </div>
   );
 };

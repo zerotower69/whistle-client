@@ -20,7 +20,6 @@ interface WaterfallViewerProps {
 const WaterfallViewer: React.FC<WaterfallViewerProps> = ({
   harData,
   height = 400,
-  selectedId,
   onRequestSelect,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -46,13 +45,10 @@ const WaterfallViewer: React.FC<WaterfallViewerProps> = ({
         showMimeTypeIcon: true,
 
         // Left column width (percentage)
-        leftColumnWith: 20,
+        leftColumnWidth: 20,
 
         // Row height (pixels)
         rowHeight: 23,
-
-        // Color theme (dark)
-        colorScheme: 'dark',
       });
 
       // Add to container

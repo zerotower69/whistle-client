@@ -72,9 +72,7 @@ const Network: React.FC = () => {
         <WaterfallViewer
           harData={harData}
           height={400}
-          selectedId={
-            selectedRequest ? new Date(selectedRequest.startTime).toISOString() : null
-          }
+          selectedId={selectedRequest ? new Date(selectedRequest.startTime).toISOString() : null}
           onRequestSelect={handleWaterfallSelect}
         />
       </div>

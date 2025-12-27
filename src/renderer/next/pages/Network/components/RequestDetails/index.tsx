@@ -119,9 +119,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ request }) => {
             <Descriptions.Item label="Request Sent">
               {request.timing.requestSent}ms
             </Descriptions.Item>
-            <Descriptions.Item label="Waiting (TTFB)">
-              {request.timing.waiting}ms
-            </Descriptions.Item>
+            <Descriptions.Item label="Waiting (TTFB)">{request.timing.waiting}ms</Descriptions.Item>
             <Descriptions.Item label="Content Download">
               {request.timing.contentDownload}ms
             </Descriptions.Item>

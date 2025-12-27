@@ -1,7 +1,7 @@
-import { RouterProvider } from 'react-router-dom'
-import router from './router'
-import { ConfigProvider, theme } from 'antd'
-import { useEffect, useState } from 'react'
+import { RouterProvider } from 'react-router-dom';
+import router from './router';
+import { ConfigProvider, theme } from 'antd';
+import { useEffect, useState } from 'react';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
@@ -31,12 +31,12 @@ function App() {
   return (
     <ConfigProvider
       theme={{
-        algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm
+        algorithm: isDark ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
     >
       <RouterProvider router={router} />
     </ConfigProvider>
-  )
+  );
 }
 
-export default App
+export default App;

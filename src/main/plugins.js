@@ -60,7 +60,7 @@ const installPlugins = async (data) => {
   return new Promise((resolve) => {
     getPeerPlugins(data.pkgs, CLIENT_PLUGINS_PATH, async (pkgs) => {
       if (pkgs && pkgs.length) {
-        data.pkgs = pkgs.map(pkg => {
+        data.pkgs = pkgs.map((pkg) => {
           if (typeof pkg === 'string') return formatPluginName(pkg);
           if (pkg && pkg.name) pkg.name = formatPluginName(pkg.name);
           return pkg;
@@ -77,13 +77,13 @@ const uninstallPlugin = async (name) => {
   name = formatPluginName(name);
   console.log(`[Plugins] Attempting to uninstall: ${name}`);
   const pluginPath = path.join(CLIENT_PLUGINS_PATH, 'node_modules', name);
-  
+
   try {
     // 1. 先通知 whistle 进程卸载插件（尝试释放资源）
     sendMsg({ type: 'uninstallPlugin', name });
-    
+
     // 2. 等待一小段时间让 whistle 处理并释放文件句柄
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
     // 3. 尝试删除物理文件
     if (fs.existsSync(pluginPath)) {
@@ -98,7 +98,7 @@ const uninstallPlugin = async (name) => {
           retry--;
           if (retry === 0) throw err;
           console.warn(`[Plugins] Delete failed, retrying... (${retry} left)`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
     } else {

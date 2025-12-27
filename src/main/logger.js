@@ -17,12 +17,12 @@ const logDir = path.dirname(log.transports.file.getFile().path);
 const cleanupOldLogs = () => {
   try {
     if (!fs.existsSync(logDir)) return;
-    
+
     const files = fs.readdirSync(logDir);
     const now = Date.now();
     const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
 
-    files.forEach(file => {
+    files.forEach((file) => {
       if (file.endsWith('.log')) {
         const filePath = path.join(logDir, file);
         const stats = fs.statSync(filePath);
@@ -54,7 +54,7 @@ export const initLogger = () => {
       const logPath = log.transports.file.getFile().path;
       if (fs.existsSync(logPath)) {
         const content = fs.readFileSync(logPath, 'utf-8');
-        const lines = content.split('\n').filter(line => line.trim());
+        const lines = content.split('\n').filter((line) => line.trim());
         // 只发送最后 200 行，避免数据过大
         const lastLines = lines.slice(-200);
         event.reply('log-history', lastLines);
@@ -81,11 +81,11 @@ log.transports.file.write = (message) => {
 
   // 推送到所有窗口
   const { BrowserWindow } = require('electron');
-  BrowserWindow.getAllWindows().forEach(win => {
+  BrowserWindow.getAllWindows().forEach((win) => {
     if (!win.isDestroyed()) {
       win.webContents.send('log-data', {
         level: message.level,
-        message: formattedMsg
+        message: formattedMsg,
       });
     }
   });
