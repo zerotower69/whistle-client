@@ -8,6 +8,7 @@ interface ValueEditorProps {
   value: ValueItem | null;
   onSave: (content: string) => void;
   onLanguageChange: (language: string) => void;
+  onContentChange?: (content: string) => void;
 }
 
 const LANGUAGE_OPTIONS = [
@@ -24,9 +25,13 @@ const LANGUAGE_OPTIONS = [
 /**
  * Right panel component with Monaco Editor
  */
-const ValueEditor: React.FC<ValueEditorProps> = ({ value, onSave, onLanguageChange }) => {
+const ValueEditor: React.FC<ValueEditorProps> = ({ 
+  value, 
+  onSave, 
+  onLanguageChange,
+  onContentChange 
+}) => {
   const editorRef = useRef<any>(null);
-  const [content, setContent] = React.useState('');
   const [isDarkMode, setIsDarkMode] = React.useState(
     window.matchMedia('(prefers-color-scheme: dark)').matches
   );
@@ -42,14 +47,14 @@ const ValueEditor: React.FC<ValueEditorProps> = ({ value, onSave, onLanguageChan
     return () => window.removeEventListener('theme-change', handleThemeChange);
   }, []);
 
-  useEffect(() => {
-    if (value) {
-      setContent(value.content);
-    }
-  }, [value]);
-
-  const handleEditorDidMount = (editor: any) => {
+  const handleEditorDidMount = (editor: any, monaco: any) => {
     editorRef.current = editor;
+
+    // Add save shortcut (Cmd+S or Ctrl+S)
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
+      const currentContent = editor.getValue();
+      onSave(currentContent);
+    });
   };
 
   const handleSave = () => {
@@ -57,6 +62,13 @@ const ValueEditor: React.FC<ValueEditorProps> = ({ value, onSave, onLanguageChan
       const newContent = editorRef.current.getValue();
       onSave(newContent);
       message.success('保存成功');
+    }
+  };
+
+  const handleContentChange = (val: string | undefined) => {
+    const newContent = val || '';
+    if (onContentChange) {
+      onContentChange(newContent);
     }
   };
 
@@ -122,10 +134,10 @@ const ValueEditor: React.FC<ValueEditorProps> = ({ value, onSave, onLanguageChan
         <Editor
           height="100%"
           language={value.language === 'text' ? 'plaintext' : value.language}
-          value={content}
+          value={value.content}
           theme={isDarkMode ? 'vs-dark' : 'light'}
           onMount={handleEditorDidMount}
-          onChange={(val) => setContent(val || '')}
+          onChange={handleContentChange}
           options={{
             minimap: { enabled: false },
             fontSize: 14,
