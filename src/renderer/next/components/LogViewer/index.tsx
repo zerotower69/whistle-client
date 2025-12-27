@@ -160,8 +160,8 @@ const LogViewer: React.FC = () => {
               color = '\x1b[33m';
               break; // Yellow
             case 'info':
-              color = '\x1b[32m';
-              break; // Green
+              color = '\x1b[34m';
+              break; // Blue
             default:
               color = '\x1b[37m';
               break; // White
@@ -187,7 +187,7 @@ const LogViewer: React.FC = () => {
             let color = '\x1b[37m'; // Default white
             if (isError) color = '\x1b[31m';
             else if (isWarn) color = '\x1b[33m';
-            else if (isInfo) color = '\x1b[32m';
+            else if (isInfo) color = '\x1b[34m';
             xtermRef.current?.writeln(`${color}${line}\x1b[0m`);
           }
         });
