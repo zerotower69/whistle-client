@@ -38,7 +38,14 @@ const Network: React.FC = () => {
 
   return (
     <Layout style={{ height: '100vh', overflow: 'hidden' }}>
-      <Header style={{ background: '#fff', padding: '0 24px', borderBottom: '1px solid #f0f0f0', height: 64 }}>
+      <Header
+        style={{
+          background: '#fff',
+          padding: '0 24px',
+          borderBottom: '1px solid #f0f0f0',
+          height: 64,
+        }}
+      >
         <Toolbar
           isPaused={isPaused}
           togglePause={togglePause}

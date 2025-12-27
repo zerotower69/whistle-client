@@ -5,9 +5,9 @@ import { calculateWaterfallData, formatPhaseName } from '../utils/waterfallUtils
 
 interface WaterfallCellProps {
   request: NetworkRequest;
-  baseTime: number;      // First request start time
-  maxTime: number;       // Maximum time range (for calculating scale)
-  width?: number;        // Waterfall column width
+  baseTime: number; // First request start time
+  maxTime: number; // Maximum time range (for calculating scale)
+  width?: number; // Waterfall column width
 }
 
 /**
@@ -29,9 +29,7 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
   // Generate tooltip content
   const tooltipContent = (
     <div>
-      <div style={{ marginBottom: 8, fontWeight: 'bold' }}>
-        {request.url}
-      </div>
+      <div style={{ marginBottom: 8, fontWeight: 'bold' }}>{request.url}</div>
       {phases.map((phase, index) => (
         <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
           <span>

@@ -4,13 +4,13 @@ import type { NetworkRequest, WaterfallData, WaterfallPhase } from '../types';
  * Phase color configuration
  */
 const PHASE_COLORS = {
-  queueing: '#e0e0e0',        // Light gray
-  dns: '#ffc107',             // Yellow
-  connection: '#ff9800',      // Orange
-  ssl: '#f44336',             // Red
-  request: '#2196f3',         // Blue
-  waiting: '#03a9f4',         // Light blue
-  download: '#4caf50',        // Green
+  queueing: '#e0e0e0', // Light gray
+  dns: '#ffc107', // Yellow
+  connection: '#ff9800', // Orange
+  ssl: '#f44336', // Red
+  request: '#2196f3', // Blue
+  waiting: '#03a9f4', // Light blue
+  download: '#4caf50', // Green
 };
 
 /**
@@ -18,7 +18,7 @@ const PHASE_COLORS = {
  */
 export const calculateWaterfallData = (
   request: NetworkRequest,
-  baseTime: number  // First request start time
+  baseTime: number, // First request start time
 ): WaterfallData => {
   const { timing, startTime } = request;
   const startOffset = startTime - baseTime;

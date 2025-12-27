@@ -14,20 +14,16 @@ interface RequestTableProps {
 /**
  * Request table component with waterfall visualization
  */
-const RequestTable: React.FC<RequestTableProps> = ({
-  requests,
-  selectedId,
-  onSelectRequest,
-}) => {
+const RequestTable: React.FC<RequestTableProps> = ({ requests, selectedId, onSelectRequest }) => {
   // Calculate base time and max time for waterfall
   const { baseTime, maxTime } = useMemo(() => {
     if (requests.length === 0) return { baseTime: 0, maxTime: 1000 };
-    
-    const times = requests.map(r => r.startTime);
+
+    const times = requests.map((r) => r.startTime);
     const base = Math.min(...times);
-    const endTimes = requests.map(r => r.endTime);
+    const endTimes = requests.map((r) => r.endTime);
     const max = Math.max(...endTimes) - base;
-    
+
     return { baseTime: base, maxTime: Math.max(max, 1000) };
   }, [requests]);
 
@@ -66,18 +62,14 @@ const RequestTable: React.FC<RequestTableProps> = ({
       dataIndex: 'statusCode',
       key: 'status',
       width: 80,
-      render: (status: number) => (
-        <Tag color={getStatusColor(status)}>{status}</Tag>
-      ),
+      render: (status: number) => <Tag color={getStatusColor(status)}>{status}</Tag>,
     },
     {
       title: 'Method',
       dataIndex: 'method',
       key: 'method',
       width: 80,
-      render: (method: string) => (
-        <Tag color={getMethodColor(method)}>{method}</Tag>
-      ),
+      render: (method: string) => <Tag color={getMethodColor(method)}>{method}</Tag>,
     },
     {
       title: 'Type',
@@ -104,12 +96,7 @@ const RequestTable: React.FC<RequestTableProps> = ({
       key: 'waterfall',
       width: 300,
       render: (_, request) => (
-        <WaterfallCell
-          request={request}
-          baseTime={baseTime}
-          maxTime={maxTime}
-          width={280}
-        />
+        <WaterfallCell request={request} baseTime={baseTime} maxTime={maxTime} width={280} />
       ),
     },
   ];

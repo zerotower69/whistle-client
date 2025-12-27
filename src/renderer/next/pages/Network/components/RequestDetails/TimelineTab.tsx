@@ -19,14 +19,44 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ request }) => {
   const colors = getPhaseColors();
 
   const phases = [
-    { name: 'queueing', label: formatPhaseName('queueing'), duration: timing.queueing, color: colors.queueing },
+    {
+      name: 'queueing',
+      label: formatPhaseName('queueing'),
+      duration: timing.queueing,
+      color: colors.queueing,
+    },
     { name: 'dns', label: formatPhaseName('dns'), duration: timing.dnsLookup, color: colors.dns },
-    { name: 'connection', label: formatPhaseName('connection'), duration: timing.initialConnection, color: colors.connection },
-    { name: 'ssl', label: formatPhaseName('ssl'), duration: timing.sslHandshake, color: colors.ssl },
-    { name: 'request', label: formatPhaseName('request'), duration: timing.requestSent, color: colors.request },
-    { name: 'waiting', label: formatPhaseName('waiting'), duration: timing.waiting, color: colors.waiting },
-    { name: 'download', label: formatPhaseName('download'), duration: timing.contentDownload, color: colors.download },
-  ].filter(phase => phase.duration > 0);
+    {
+      name: 'connection',
+      label: formatPhaseName('connection'),
+      duration: timing.initialConnection,
+      color: colors.connection,
+    },
+    {
+      name: 'ssl',
+      label: formatPhaseName('ssl'),
+      duration: timing.sslHandshake,
+      color: colors.ssl,
+    },
+    {
+      name: 'request',
+      label: formatPhaseName('request'),
+      duration: timing.requestSent,
+      color: colors.request,
+    },
+    {
+      name: 'waiting',
+      label: formatPhaseName('waiting'),
+      duration: timing.waiting,
+      color: colors.waiting,
+    },
+    {
+      name: 'download',
+      label: formatPhaseName('download'),
+      duration: timing.contentDownload,
+      color: colors.download,
+    },
+  ].filter((phase) => phase.duration > 0);
 
   const maxDuration = timing.total;
 
@@ -48,15 +78,19 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ request }) => {
             <div key={phase.name} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                 <span>{phase.label}</span>
-                <span>{phase.duration.toFixed(2)} ms ({percentage.toFixed(1)}%)</span>
+                <span>
+                  {phase.duration.toFixed(2)} ms ({percentage.toFixed(1)}%)
+                </span>
               </div>
-              <div style={{ 
-                position: 'relative', 
-                width: '100%', 
-                height: 30, 
-                backgroundColor: '#f5f5f5',
-                borderRadius: 4,
-              }}>
+              <div
+                style={{
+                  position: 'relative',
+                  width: '100%',
+                  height: 30,
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 4,
+                }}
+              >
                 <div
                   style={{
                     position: 'absolute',
@@ -83,14 +117,16 @@ const TimelineTab: React.FC<TimelineTabProps> = ({ request }) => {
 
       <div style={{ marginTop: 24 }}>
         <h4>时间线（按顺序）</h4>
-        <div style={{ 
-          position: 'relative', 
-          width: '100%', 
-          height: 40, 
-          backgroundColor: '#f5f5f5',
-          borderRadius: 4,
-          overflow: 'hidden',
-        }}>
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: 40,
+            backgroundColor: '#f5f5f5',
+            borderRadius: 4,
+            overflow: 'hidden',
+          }}
+        >
           {phases.map((phase, index) => {
             const prevDuration = phases.slice(0, index).reduce((sum, p) => sum + p.duration, 0);
             const leftPercentage = (prevDuration / maxDuration) * 100;

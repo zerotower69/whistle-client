@@ -8,11 +8,11 @@ const generateMockRequest = (id: number): NetworkRequest => {
   const methods = ['GET', 'POST', 'PUT', 'DELETE'] as const;
   const types = ['document', 'script', 'stylesheet', 'xhr', 'image'] as const;
   const statuses = [200, 201, 204, 301, 302, 400, 404, 500];
-  
+
   const method = methods[Math.floor(Math.random() * methods.length)];
   const type = types[Math.floor(Math.random() * types.length)];
   const status = statuses[Math.floor(Math.random() * statuses.length)];
-  
+
   const baseTime = Date.now();
   const queueing = Math.random() * 10;
   const dnsLookup = Math.random() * 50;
@@ -21,7 +21,14 @@ const generateMockRequest = (id: number): NetworkRequest => {
   const requestSent = Math.random() * 5;
   const waiting = Math.random() * 200;
   const contentDownload = Math.random() * 100;
-  const total = queueing + dnsLookup + initialConnection + sslHandshake + requestSent + waiting + contentDownload;
+  const total =
+    queueing +
+    dnsLookup +
+    initialConnection +
+    sslHandshake +
+    requestSent +
+    waiting +
+    contentDownload;
 
   return {
     id: `req-${id}`,
@@ -45,14 +52,14 @@ const generateMockRequest = (id: number): NetworkRequest => {
       total,
     },
     requestHeaders: {
-      'accept': 'application/json',
+      accept: 'application/json',
       'user-agent': 'Mozilla/5.0',
       'content-type': 'application/json',
     },
     responseHeaders: {
       'content-type': 'application/json',
       'cache-control': 'max-age=3600',
-      'server': 'nginx',
+      server: 'nginx',
     },
     requestBody: JSON.stringify({ query: 'test' }),
     responseBody: JSON.stringify({ data: 'response', id, timestamp: Date.now() }, null, 2),
@@ -77,7 +84,7 @@ export const useNetworkCapture = () => {
       intervalRef.current = setInterval(() => {
         requestIdCounter.current++;
         const newRequest = generateMockRequest(requestIdCounter.current);
-        setRequests(prev => [...prev, newRequest]);
+        setRequests((prev) => [...prev, newRequest]);
       }, 2000);
     }
 
@@ -89,7 +96,7 @@ export const useNetworkCapture = () => {
   }, [isPaused]);
 
   const togglePause = useCallback(() => {
-    setIsPaused(prev => !prev);
+    setIsPaused((prev) => !prev);
   }, []);
 
   const clearRequests = useCallback(() => {

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Button, Space, Input, Select, Badge } from 'antd';
-import { 
-  PauseCircleOutlined, 
-  PlayCircleOutlined, 
-  DeleteOutlined, 
+import {
+  PauseCircleOutlined,
+  PlayCircleOutlined,
+  DeleteOutlined,
   DownloadOutlined,
-  SearchOutlined 
+  SearchOutlined,
 } from '@ant-design/icons';
 import type { HttpMethod, ResourceType } from '../types';
 
@@ -42,7 +42,18 @@ const Toolbar: React.FC<ToolbarProps> = ({
   onTypesChange,
 }) => {
   const methodOptions: HttpMethod[] = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS', 'HEAD'];
-  const typeOptions: ResourceType[] = ['document', 'stylesheet', 'script', 'image', 'font', 'xhr', 'fetch', 'websocket', 'media', 'other'];
+  const typeOptions: ResourceType[] = [
+    'document',
+    'stylesheet',
+    'script',
+    'image',
+    'font',
+    'xhr',
+    'fetch',
+    'websocket',
+    'media',
+    'other',
+  ];
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 16, height: '100%' }}>
@@ -79,7 +90,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         value={selectedMethods}
         onChange={onMethodsChange}
         style={{ width: 200 }}
-        options={methodOptions.map(m => ({ label: m, value: m }))}
+        options={methodOptions.map((m) => ({ label: m, value: m }))}
       />
 
       <Select
@@ -88,7 +99,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         value={selectedTypes}
         onChange={onTypesChange}
         style={{ width: 200 }}
-        options={typeOptions.map(t => ({ label: t, value: t }))}
+        options={typeOptions.map((t) => ({ label: t, value: t }))}
       />
     </div>
   );

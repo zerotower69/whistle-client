@@ -233,7 +233,7 @@ export const getArtifactName = (version) => {
  * 格式化插件名称
  * 1. 过滤掉结尾的 : 和 :: (绝对不允许)
  * 2. 只有在不包含 whistle 且不是私有包 (@开头) 的情况下才补全 whistle. 前缀
- * @param {string} name 
+ * @param {string} name
  * @returns {string}
  */
 export const formatPluginName = (name) => {
@@ -241,7 +241,7 @@ export const formatPluginName = (name) => {
     return '';
   }
   let pluginName = name.trim();
-  
+
   // 过滤掉结尾的 : 和 ::
   pluginName = pluginName.replace(/:+$/, '');
 
@@ -250,6 +250,6 @@ export const formatPluginName = (name) => {
   if (!pluginName.toLowerCase().includes('whistle') && !pluginName.startsWith('@')) {
     pluginName = `whistle.${pluginName}`;
   }
-  
+
   return pluginName;
 };

@@ -49,7 +49,9 @@ interface HAREntry {
 /**
  * Convert headers object to HAR format
  */
-const headersToArray = (headers: Record<string, string>): Array<{ name: string; value: string }> => {
+const headersToArray = (
+  headers: Record<string, string>,
+): Array<{ name: string; value: string }> => {
   return Object.entries(headers).map(([name, value]) => ({ name, value }));
 };
 
@@ -57,7 +59,7 @@ const headersToArray = (headers: Record<string, string>): Array<{ name: string; 
  * Export network requests to HAR format
  */
 export const exportToHAR = (requests: NetworkRequest[]): string => {
-  const entries: HAREntry[] = requests.map(request => ({
+  const entries: HAREntry[] = requests.map((request) => ({
     startedDateTime: new Date(request.startTime).toISOString(),
     time: request.timing.total,
     request: {

@@ -10,7 +10,7 @@ export const useNetworkFilter = (requests: NetworkRequest[]) => {
   const [selectedTypes, setSelectedTypes] = useState<ResourceType[]>([]);
 
   const filteredRequests = useCallback(() => {
-    return requests.filter(request => {
+    return requests.filter((request) => {
       // Search filter
       if (searchText && !request.url.toLowerCase().includes(searchText.toLowerCase())) {
         return false;

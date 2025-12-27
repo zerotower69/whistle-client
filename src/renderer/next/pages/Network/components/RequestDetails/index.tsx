@@ -18,12 +18,14 @@ interface RequestDetailsProps {
 const RequestDetails: React.FC<RequestDetailsProps> = ({ request }) => {
   if (!request) {
     return (
-      <div style={{ 
-        height: '100%', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'center' 
-      }}>
+      <div
+        style={{
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
         <Empty description="请选择一个请求查看详情" />
       </div>
     );
@@ -63,11 +65,7 @@ const RequestDetails: React.FC<RequestDetailsProps> = ({ request }) => {
   ];
 
   return (
-    <Tabs
-      items={items}
-      style={{ height: '100%' }}
-      tabBarStyle={{ margin: 0, padding: '0 16px' }}
-    />
+    <Tabs items={items} style={{ height: '100%' }} tabBarStyle={{ margin: 0, padding: '0 16px' }} />
   );
 };
 

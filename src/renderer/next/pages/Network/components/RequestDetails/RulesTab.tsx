@@ -24,10 +24,7 @@ const RulesTab: React.FC<RulesTabProps> = ({ request }) => {
         dataSource={request.rules}
         renderItem={(rule, index) => (
           <List.Item>
-            <List.Item.Meta
-              avatar={<Tag color="blue">#{index + 1}</Tag>}
-              description={rule}
-            />
+            <List.Item.Meta avatar={<Tag color="blue">#{index + 1}</Tag>} description={rule} />
           </List.Item>
         )}
       />

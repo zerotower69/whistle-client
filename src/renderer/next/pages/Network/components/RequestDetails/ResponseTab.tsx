@@ -32,7 +32,7 @@ const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
   // Format content
   const formattedContent = useMemo(() => {
     if (!request?.responseBody) return '';
-    
+
     if (viewMode === 'formatted' && contentType === 'json') {
       try {
         return JSON.stringify(JSON.parse(request.responseBody), null, 2);
@@ -40,7 +40,7 @@ const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
         return request.responseBody;
       }
     }
-    
+
     return request.responseBody;
   }, [request?.responseBody, viewMode, contentType]);
 
@@ -74,14 +74,16 @@ const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Toolbar */}
-      <div style={{
-        padding: '8px 16px',
-        borderBottom: '1px solid #f0f0f0',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-      }}>
-        <Radio.Group value={viewMode} onChange={e => setViewMode(e.target.value)}>
+      <div
+        style={{
+          padding: '8px 16px',
+          borderBottom: '1px solid #f0f0f0',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
+        <Radio.Group value={viewMode} onChange={(e) => setViewMode(e.target.value)}>
           <Radio.Button value="formatted">格式化</Radio.Button>
           <Radio.Button value="raw">原始</Radio.Button>
           <Radio.Button value="preview">预览</Radio.Button>
@@ -94,9 +96,7 @@ const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
           <Button icon={<DownloadOutlined />} onClick={handleDownload}>
             下载
           </Button>
-          <Button icon={<FullscreenOutlined />}>
-            全屏
-          </Button>
+          <Button icon={<FullscreenOutlined />}>全屏</Button>
         </Space>
       </div>
 
