@@ -32,7 +32,7 @@ const ValueTree: React.FC<ValueTreeProps> = ({ values, selectedKey, onSelect, di
         // Has group (only one level)
         const groupName = value.name.substring(0, slashIndex);
         const itemName = value.name.substring(slashIndex + 1);
-        
+
         let group = root.find((node) => node.title === groupName && !node.isLeaf);
 
         if (!group) {
@@ -51,14 +51,14 @@ const ValueTree: React.FC<ValueTreeProps> = ({ values, selectedKey, onSelect, di
           title: (
             <span style={{ position: 'relative' }}>
               {isDirty && (
-                <span 
-                  style={{ 
-                    color: '#ff4d4f', 
-                    position: 'absolute', 
-                    left: -8, 
+                <span
+                  style={{
+                    color: '#ff4d4f',
+                    position: 'absolute',
+                    left: -8,
                     top: -4,
                     fontSize: 16,
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
                   }}
                 >
                   *
@@ -78,14 +78,14 @@ const ValueTree: React.FC<ValueTreeProps> = ({ values, selectedKey, onSelect, di
           title: (
             <span style={{ position: 'relative' }}>
               {isDirty && (
-                <span 
-                  style={{ 
-                    color: '#ff4d4f', 
-                    position: 'absolute', 
-                    left: -8, 
+                <span
+                  style={{
+                    color: '#ff4d4f',
+                    position: 'absolute',
+                    left: -8,
                     top: -4,
                     fontSize: 16,
-                    fontWeight: 'bold'
+                    fontWeight: 'bold',
                   }}
                 >
                   *

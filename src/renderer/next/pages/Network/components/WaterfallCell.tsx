@@ -41,7 +41,10 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
     <div>
       <div style={{ marginBottom: TOOLTIP_MARGIN_BOTTOM, fontWeight: 'bold' }}>{request.url}</div>
       {phases.map((phase, index) => (
-        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: TOOLTIP_GAP }}>
+        <div
+          key={index}
+          style={{ display: 'flex', justifyContent: 'space-between', gap: TOOLTIP_GAP }}
+        >
           <span>
             <span
               style={{
@@ -58,7 +61,13 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
           <span>{phase.duration.toFixed(2)}ms</span>
         </div>
       ))}
-      <div style={{ marginTop: TOOLTIP_BORDER_TOP_MARGIN, paddingTop: TOOLTIP_BORDER_TOP_PADDING, borderTop: '1px solid #fff3' }}>
+      <div
+        style={{
+          marginTop: TOOLTIP_BORDER_TOP_MARGIN,
+          paddingTop: TOOLTIP_BORDER_TOP_PADDING,
+          borderTop: '1px solid #fff3',
+        }}
+      >
         <strong>总计: {request.timing.total.toFixed(2)}ms</strong>
       </div>
     </div>

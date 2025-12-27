@@ -74,10 +74,7 @@ const Toolbar: React.FC<ToolbarProps> = ({
         <Button icon={<DownloadOutlined />} onClick={exportHAR}>
           导出 HAR
         </Button>
-        <Button 
-          icon={<div className="i-mdi:terminal w-4 h-4" />} 
-          onClick={handleToggleLog}
-        >
+        <Button icon={<div className="i-mdi:terminal w-4 h-4" />} onClick={handleToggleLog}>
           日志
         </Button>
       </Space>

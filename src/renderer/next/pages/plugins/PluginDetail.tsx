@@ -50,34 +50,42 @@ const PluginDetail: React.FC = () => {
   const [activeTab, setActiveTab] = useState('about');
 
   useEffect(() => {
-    loadPluginDetail();
-  }, [pluginName]);
-
-  const loadPluginDetail = async () => {
-    setLoading(true);
-    try {
-      const { ipcRenderer } = window.require('electron');
-      const result = await ipcRenderer.invoke('get-plugin-detail', pluginName);
-
-      if (result.success && result.plugin) {
-        setPlugin({
-          name: pluginName!,
-          ...result.plugin,
-          enabled: !result.plugin.isDisable,
-          installedVersion: result.plugin.version,
-        });
-      } else {
-        messageApi.error(`无法加载插件信息: ${result.error || '未找到插件'}`);
-        // If plugin not found, wait a bit then go back
-        setTimeout(() => navigate('/plugins'), 2000);
+    const loadPluginDetail = async () => {
+      if (!pluginName) {
+        messageApi.error('插件名称缺失');
+        setTimeout(() => navigate('/plugins'), 1000);
+        return;
       }
-    } catch (error: any) {
-      console.error('Failed to load plugin detail:', error);
-      messageApi.error(`加载插件详情失败: ${error.message}`);
-    } finally {
-      setLoading(false);
+
+      setLoading(true);
+      try {
+        const { ipcRenderer } = window.require('electron');
+        const result = await ipcRenderer.invoke('get-plugin-detail', pluginName);
+
+        if (result.success && result.plugin) {
+          setPlugin({
+            name: pluginName,
+            ...result.plugin,
+            enabled: !result.plugin.isDisable,
+            installedVersion: result.plugin.version,
+          });
+        } else {
+          messageApi.error(`无法加载插件信息: ${result.error || '未找到插件'}`);
+          // If plugin not found, wait a bit then go back
+          setTimeout(() => navigate('/plugins'), 2000);
+        }
+      } catch (error: any) {
+        console.error('Failed to load plugin detail:', error);
+        messageApi.error(`加载插件详情失败: ${error.message}`);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (pluginName) {
+      loadPluginDetail();
     }
-  };
+  }, [pluginName, navigate, messageApi]);
 
   const handleBack = () => {
     navigate('/plugins');
@@ -145,10 +153,9 @@ const PluginDetail: React.FC = () => {
             <Descriptions.Item label="版本">
               <Space>
                 <Tag color="blue">v{plugin.installedVersion}</Tag>
-                {plugin.latestVersion &&
-                  plugin.latestVersion !== plugin.installedVersion && (
-                    <Tag color="warning">最新版本: v{plugin.latestVersion}</Tag>
-                  )}
+                {plugin.latestVersion && plugin.latestVersion !== plugin.installedVersion && (
+                  <Tag color="warning">最新版本: v{plugin.latestVersion}</Tag>
+                )}
               </Space>
             </Descriptions.Item>
             <Descriptions.Item label="状态">
@@ -165,9 +172,7 @@ const PluginDetail: React.FC = () => {
             <Descriptions.Item label="描述">
               <Paragraph>{plugin.description || '暂无描述'}</Paragraph>
             </Descriptions.Item>
-            {plugin.author && (
-              <Descriptions.Item label="作者">{plugin.author}</Descriptions.Item>
-            )}
+            {plugin.author && <Descriptions.Item label="作者">{plugin.author}</Descriptions.Item>}
             {plugin.homepage && (
               <Descriptions.Item label="主页">
                 <a href={plugin.homepage} target="_blank" rel="noopener noreferrer">
@@ -263,12 +268,7 @@ const PluginDetail: React.FC = () => {
           <Divider style={{ margin: '12px 0' }} />
 
           {/* Tabs */}
-          <Tabs
-            activeKey={activeTab}
-            onChange={setActiveTab}
-            items={tabItems}
-            size="large"
-          />
+          <Tabs activeKey={activeTab} onChange={setActiveTab} items={tabItems} size="large" />
         </Space>
       </Card>
     </div>
