@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './index.css';
 import { useWhistleSync } from '../../hooks/useWhistleSync';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -69,6 +70,7 @@ const DEFAULT_REGISTRIES = [
 const Plugins: React.FC = () => {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
 
   // 状态管理
   const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([]);
@@ -601,7 +603,13 @@ const Plugins: React.FC = () => {
                     title={
                       <div className="plugin-header">
                         <Space>
-                          <Text strong>{plugin.name}</Text>
+                          <Text
+                            strong
+                            style={{ cursor: 'pointer', color: '#1890ff' }}
+                            onClick={() => navigate(`/plugins/${plugin.name}`)}
+                          >
+                            {plugin.name}
+                          </Text>
                           {plugin.enabled ? (
                             <Tag color="success" icon={<CheckCircleOutlined />}>
                               已启用
@@ -821,13 +829,13 @@ whistle.vase`}
           >
             <Space size="large">
               <span>
-                <Tag size="small">↵</Tag> 搜索
+                <Tag>↵</Tag> 搜索
               </span>
               <span>
-                <Tag size="small">↑↓</Tag> 选择
+                <Tag>↑↓</Tag> 选择
               </span>
               <span>
-                <Tag size="small">ESC</Tag> 关闭
+                <Tag>ESC</Tag> 关闭
               </span>
             </Space>
             <span>Powered by npm registry</span>

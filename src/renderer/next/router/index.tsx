@@ -4,6 +4,7 @@ import Network from '../pages/Network';
 import Rules from '../pages/Rules';
 import Values from '../pages/Values';
 import Plugins from '../pages/plugins';
+import PluginDetail from '../pages/plugins/PluginDetail';
 
 /**
  * 路由配置
@@ -33,6 +34,10 @@ const router = createHashRouter([
       {
         path: 'plugins',
         element: <Plugins />,
+      },
+      {
+        path: 'plugins/:pluginName',
+        element: <PluginDetail />,
       },
     ],
   },

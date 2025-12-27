@@ -2,11 +2,19 @@ import { RouterProvider } from 'react-router-dom';
 import router from './router';
 import { ConfigProvider, theme } from 'antd';
 import { useEffect, useState } from 'react';
+import { setNavigateRef } from './index';
 
 function App() {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
+    // Setup navigation reference for window.showWhistleWebUI()
+    // This allows the Electron main process to control routing
+    const navigate = (path: string) => {
+      router.navigate(path);
+    };
+    setNavigateRef(navigate);
+
     const { ipcRenderer } = window.require('electron');
     const initTheme = async () => {
       const savedTheme = await ipcRenderer.invoke('get-setting', 'theme-mode');

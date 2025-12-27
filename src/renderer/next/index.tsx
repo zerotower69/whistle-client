@@ -11,6 +11,30 @@ import * as monaco from 'monaco-editor';
 // which is more reliable for Electron apps that might run offline.
 loader.config({ monaco });
 
+// Navigation reference for Electron main process
+let navigateRef: ((path: string) => void) | null = null;
+
+/**
+ * Set the navigate function reference
+ * Called from App.tsx to enable navigation from main process
+ */
+export const setNavigateRef = (navigate: (path: string) => void) => {
+  navigateRef = navigate;
+};
+
+/**
+ * Global function to switch pages
+ * Called by Electron main process via window.showWhistleWebUI()
+ */
+(window as any).showWhistleWebUI = (name: string) => {
+  if (navigateRef) {
+    const path = `/${name.toLowerCase()}`;
+    navigateRef(path);
+  } else {
+    console.warn('Navigation reference not yet initialized');
+  }
+};
+
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>
     <App />
