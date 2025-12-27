@@ -49,23 +49,25 @@ export const sudoPromptExec = (command, callback) => {
 // Alias for compatibility if needed, or just export sudoPromptExec
 export { sudoPromptExec as sudoPrompt };
 
-const existsFile = (file) => new Promise((resolve) => {
-  fs.stat(file, (err, stat) => {
-    if (err) {
-      return fs.stat(file, (_, s) => resolve(s && s.isFile()));
-    }
-    resolve(stat.isFile());
+const existsFile = (file) =>
+  new Promise((resolve) => {
+    fs.stat(file, (err, stat) => {
+      if (err) {
+        return fs.stat(file, (_, s) => resolve(s && s.isFile()));
+      }
+      resolve(stat.isFile());
+    });
   });
-});
 
-const readFile = (file) => new Promise((resolve) => {
-  fs.readFile(file, (err, buf) => {
-    if (err) {
-      return fs.readFile(file, (_, buf2) => resolve(buf2));
-    }
-    resolve(buf);
+const readFile = (file) =>
+  new Promise((resolve) => {
+    fs.readFile(file, (err, buf) => {
+      if (err) {
+        return fs.readFile(file, (_, buf2) => resolve(buf2));
+      }
+      resolve(buf);
+    });
   });
-});
 
 export const compareFile = async (file1, file2) => {
   const exists = await existsFile(file1);
@@ -76,16 +78,17 @@ export const compareFile = async (file1, file2) => {
   return ctn1 && ctn2 ? ctn1.equals(ctn2) : false;
 };
 
-export const readJson = (file) => new Promise((resolve) => {
-  fse.readJson(file, (err, data) => {
-    if (err) {
-      return fse.readJson(file, (_, data2) => {
-        resolve(data2 || {});
-      });
-    }
-    resolve(data || {});
+export const readJson = (file) =>
+  new Promise((resolve) => {
+    fse.readJson(file, (err, data) => {
+      if (err) {
+        return fse.readJson(file, (_, data2) => {
+          resolve(data2 || {});
+        });
+      }
+      resolve(data || {});
+    });
   });
-});
 
 const killProcess = (pid) => {
   if (pid) {
@@ -111,7 +114,8 @@ export const closeWhistle = () => {
     if (pid !== curPid) {
       killProcess(pid);
     }
-  } catch (e) {} finally {
+  } catch (e) {
+  } finally {
     try {
       fs.unlinkSync(PROC_PATH);
     } catch (e) {}

@@ -1,14 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import {
-  Form,
-  Input,
-  Button,
-  Checkbox,
-  Select,
-  Space,
-  message,
-  Typography,
-} from 'antd';
+import { Form, Input, Button, Checkbox, Select, Space, message, Typography } from 'antd';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -176,13 +167,7 @@ const App: React.FC = () => {
           labelCol={{ span: 7 }}
           wrapperCol={{ span: 17 }}
         >
-          <Input
-            ref={portInputRef}
-            id="port"
-            type="number"
-            placeholder="8888"
-            maxLength={5}
-          />
+          <Input ref={portInputRef} id="port" type="number" placeholder="8888" maxLength={5} />
         </Form.Item>
 
         {showAdvanced && (
@@ -244,11 +229,7 @@ const App: React.FC = () => {
 
         {!showAdvanced && (
           <Form.Item wrapperCol={{ offset: 7, span: 17 }}>
-            <Button
-              type="link"
-              onClick={() => setShowAdvanced(true)}
-              style={{ paddingLeft: 0 }}
-            >
+            <Button type="link" onClick={() => setShowAdvanced(true)} style={{ paddingLeft: 0 }}>
               Show Advanced &gt;&gt;
             </Button>
           </Form.Item>

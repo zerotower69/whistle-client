@@ -21,7 +21,7 @@ import {
   Switch,
   Popconfirm,
   Badge,
-  Alert
+  Alert,
 } from 'antd';
 import {
   DownloadOutlined,
@@ -35,7 +35,6 @@ import {
   AppstoreOutlined,
   ClockCircleOutlined,
   GlobalOutlined,
-  InfoCircleOutlined
 } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
@@ -64,13 +63,13 @@ const DEFAULT_REGISTRIES = [
   { label: 'npm 官方镜像', value: 'https://registry.npmjs.org/' },
   { label: '淘宝镜像', value: 'https://registry.npmmirror.com/' },
   { label: '华为云镜像', value: 'https://repo.huaweicloud.com/repository/npm/' },
-  { label: '腾讯云镜像', value: 'https://mirrors.cloud.tencent.com/npm/' }
+  { label: '腾讯云镜像', value: 'https://mirrors.cloud.tencent.com/npm/' },
 ];
 
 const App: React.FC = () => {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
-  
+
   // 状态管理
   const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([]);
   const [searchResults, setSearchResults] = useState<Plugin[]>([]);
@@ -85,9 +84,9 @@ const App: React.FC = () => {
   useEffect(() => {
     loadRegistryHistory();
     const { ipcRenderer } = window.require('electron');
-    
+
     const handlePluginsList = (_: any, pluginsMap: any) => {
-      const list = Object.keys(pluginsMap).map(key => {
+      const list = Object.keys(pluginsMap).map((key) => {
         const p = pluginsMap[key];
         return {
           ...p,
@@ -161,15 +160,15 @@ const App: React.FC = () => {
       // 向主进程发送安装请求
       const { ipcRenderer } = window.require('electron');
       const installData = {
-        pkgs: pluginNames.map(name => ({ name })),
-        registry: registry || selectedRegistry
+        pkgs: pluginNames.map((name: string) => ({ name })),
+        registry: registry || selectedRegistry,
       };
 
       messageApi.info(`正在安装插件: ${pluginNames.join(', ')}...`);
-      
+
       // 调用主进程的插件安装方法
       const result = await ipcRenderer.invoke('install-plugins', installData);
-      
+
       if (result.success) {
         messageApi.success(`插件安装成功: ${pluginNames.join(', ')}`);
         form.resetFields();
@@ -178,7 +177,6 @@ const App: React.FC = () => {
       } else {
         messageApi.error(`插件安装失败: ${result.error}`);
       }
-      
     } catch (error: any) {
       messageApi.error(`插件安装失败: ${error.message}`);
     } finally {
@@ -193,7 +191,7 @@ const App: React.FC = () => {
       // 向主进程发送卸载请求
       const { ipcRenderer } = window.require('electron');
       const result = await ipcRenderer.invoke('uninstall-plugin', pluginName);
-      
+
       if (result.success) {
         messageApi.success(`插件 ${pluginName} 卸载成功`);
         loadInstalledPlugins();
@@ -212,10 +210,10 @@ const App: React.FC = () => {
     try {
       const { ipcRenderer } = window.require('electron');
       const result = await ipcRenderer.invoke('toggle-plugin', { name: pluginName, enabled });
-      
+
       if (result.success) {
-        setInstalledPlugins(prev => 
-          prev.map(p => p.name === pluginName ? { ...p, enabled } : p)
+        setInstalledPlugins((prev) =>
+          prev.map((p) => (p.name === pluginName ? { ...p, enabled } : p)),
         );
         messageApi.success(`插件 ${pluginName} 已${enabled ? '启用' : '禁用'}`);
       } else {
@@ -263,9 +261,11 @@ const App: React.FC = () => {
     setSearchLoading(true);
     try {
       // 使用 npm registry search API
-      const response = await fetch(`https://registry.npmjs.org/-/v1/search?text=keywords:whistle+${encodeURIComponent(searchTerm)}&size=20`);
+      const response = await fetch(
+        `https://registry.npmjs.org/-/v1/search?text=keywords:whistle+${encodeURIComponent(searchTerm)}&size=20`,
+      );
       const data = await response.json();
-      
+
       const results = data.objects.map((obj: any) => ({
         name: obj.package.name,
         version: obj.package.version,
@@ -273,10 +273,10 @@ const App: React.FC = () => {
         author: obj.package.author?.name,
         keywords: obj.package.keywords,
         homepage: obj.package.links?.homepage,
-        installed: installedPlugins.some(p => p.name === obj.package.name),
-        enabled: false
+        installed: installedPlugins.some((p) => p.name === obj.package.name),
+        enabled: false,
       }));
-      
+
       setSearchResults(results);
     } catch (error: any) {
       messageApi.error(`搜索失败: ${error.message}`);
@@ -286,8 +286,8 @@ const App: React.FC = () => {
   };
 
   const installedCount = installedPlugins.length;
-  const enabledCount = installedPlugins.filter(p => p.enabled).length;
-  const availableUpdates = installedPlugins.filter(p => p.version !== p.installedVersion).length;
+  const enabledCount = installedPlugins.filter((p) => p.enabled).length;
+  const availableUpdates = installedPlugins.filter((p) => p.version !== p.installedVersion).length;
 
   return (
     <Layout style={{ height: '100vh' }}>
@@ -298,7 +298,7 @@ const App: React.FC = () => {
             <AppstoreOutlined style={{ marginRight: 8 }} />
             插件管理
           </Title>
-          
+
           <Space size="middle">
             <Tooltip title="全局启用/禁用所有插件">
               <Switch
@@ -308,20 +308,12 @@ const App: React.FC = () => {
                 onChange={handleToggleAllPlugins}
               />
             </Tooltip>
-            
-            <Button
-              icon={<ReloadOutlined />}
-              onClick={handleRefreshPlugins}
-              loading={loading}
-            >
+
+            <Button icon={<ReloadOutlined />} onClick={handleRefreshPlugins} loading={loading}>
               刷新
             </Button>
-            
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => setInstallModal(true)}
-            >
+
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setInstallModal(true)}>
               安装插件
             </Button>
           </Space>
@@ -366,7 +358,9 @@ const App: React.FC = () => {
               <Card>
                 <Statistic
                   title="镜像源"
-                  value={DEFAULT_REGISTRIES.find(r => r.value === selectedRegistry)?.label || '自定义'}
+                  value={
+                    DEFAULT_REGISTRIES.find((r) => r.value === selectedRegistry)?.label || '自定义'
+                  }
                   prefix={<GlobalOutlined />}
                   valueStyle={{ color: '#722ed1' }}
                 />
@@ -381,7 +375,7 @@ const App: React.FC = () => {
             <Input
               placeholder="搜索插件名称或关键词"
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               onPressEnter={handleSearchPlugins}
               style={{ flex: 1 }}
             />
@@ -394,17 +388,18 @@ const App: React.FC = () => {
               搜索
             </Button>
           </Space.Compact>
-          
+
           {searchResults.length > 0 && (
             <div style={{ marginTop: 16 }}>
               <Text type="secondary">搜索结果 ({searchResults.length})</Text>
               <List
                 size="small"
                 dataSource={searchResults}
-                renderItem={plugin => (
+                renderItem={(plugin) => (
                   <List.Item
                     actions={[
                       <Button
+                        key="install"
                         size="small"
                         icon={<DownloadOutlined />}
                         onClick={() => {
@@ -413,7 +408,7 @@ const App: React.FC = () => {
                         }}
                       >
                         安装
-                      </Button>
+                      </Button>,
                     ]}
                   >
                     <List.Item.Meta
@@ -423,8 +418,10 @@ const App: React.FC = () => {
                           <Text type="secondary">{plugin.description}</Text>
                           <div>
                             <Tag color="blue">v{plugin.version}</Tag>
-                            {plugin.keywords?.map(keyword => (
-                              <Tag key={keyword} color="default">{keyword}</Tag>
+                            {plugin.keywords?.map((keyword) => (
+                              <Tag key={keyword} color="default">
+                                {keyword}
+                              </Tag>
                             ))}
                           </div>
                         </div>
@@ -438,8 +435,8 @@ const App: React.FC = () => {
         </Card>
 
         {/* 已安装插件列表 */}
-        <Card 
-          title={`已安装插件 (${installedCount})`} 
+        <Card
+          title={`已安装插件 (${installedCount})`}
           extra={
             <Space>
               {availableUpdates > 0 && (
@@ -453,7 +450,7 @@ const App: React.FC = () => {
           }
         >
           {installedPlugins.length === 0 ? (
-            <Empty 
+            <Empty
               className="empty-state"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description="暂无已安装的插件"
@@ -466,7 +463,7 @@ const App: React.FC = () => {
             <List
               itemLayout="vertical"
               dataSource={installedPlugins}
-              renderItem={plugin => (
+              renderItem={(plugin) => (
                 <List.Item
                   className="plugin-card"
                   actions={[
@@ -478,11 +475,7 @@ const App: React.FC = () => {
                       disabled={!globalPluginsEnabled}
                     />,
                     <Tooltip key="settings" title="插件设置">
-                      <Button 
-                        size="small" 
-                        icon={<SettingOutlined />} 
-                        type="text"
-                      />
+                      <Button size="small" icon={<SettingOutlined />} type="text" />
                     </Tooltip>,
                     <Popconfirm
                       key="delete"
@@ -491,13 +484,8 @@ const App: React.FC = () => {
                       okText="确定"
                       cancelText="取消"
                     >
-                      <Button 
-                        size="small" 
-                        danger 
-                        icon={<DeleteOutlined />} 
-                        type="text"
-                      />
-                    </Popconfirm>
+                      <Button size="small" danger icon={<DeleteOutlined />} type="text" />
+                    </Popconfirm>,
                   ]}
                 >
                   <List.Item.Meta
@@ -506,12 +494,16 @@ const App: React.FC = () => {
                         <Space>
                           <Text strong>{plugin.name}</Text>
                           {plugin.enabled ? (
-                            <Tag color="success" icon={<CheckCircleOutlined />}>已启用</Tag>
+                            <Tag color="success" icon={<CheckCircleOutlined />}>
+                              已启用
+                            </Tag>
                           ) : (
                             <Tag color="default">已禁用</Tag>
                           )}
                           {plugin.version !== plugin.installedVersion && (
-                            <Tag color="warning" icon={<ExclamationCircleOutlined />}>有更新</Tag>
+                            <Tag color="warning" icon={<ExclamationCircleOutlined />}>
+                              有更新
+                            </Tag>
                           )}
                         </Space>
                       </div>
@@ -529,15 +521,15 @@ const App: React.FC = () => {
                             )}
                             <Text type="secondary">大小: {plugin.size}</Text>
                             <Text type="secondary">更新: {plugin.lastUpdated}</Text>
-                            {plugin.author && (
-                              <Text type="secondary">作者: {plugin.author}</Text>
-                            )}
+                            {plugin.author && <Text type="secondary">作者: {plugin.author}</Text>}
                           </Space>
                         </div>
                         {plugin.keywords && (
                           <div style={{ marginTop: 8 }}>
-                            {plugin.keywords.map(keyword => (
-                              <Tag key={keyword} color="processing">{keyword}</Tag>
+                            {plugin.keywords.map((keyword) => (
+                              <Tag key={keyword} color="processing">
+                                {keyword}
+                              </Tag>
                             ))}
                           </div>
                         )}
@@ -566,11 +558,7 @@ const App: React.FC = () => {
             style={{ marginBottom: 16 }}
           />
 
-          <Form
-            form={form}
-            layout="vertical"
-            onFinish={handleInstallPlugins}
-          >
+          <Form form={form} layout="vertical" onFinish={handleInstallPlugins}>
             <Form.Item
               name="plugins"
               label="插件名称"
@@ -586,11 +574,7 @@ whistle.vase`}
               />
             </Form.Item>
 
-            <Form.Item
-              name="registry"
-              label="镜像源"
-              initialValue={selectedRegistry}
-            >
+            <Form.Item name="registry" label="镜像源" initialValue={selectedRegistry}>
               <Select
                 placeholder="选择或输入镜像源"
                 allowClear
@@ -598,7 +582,7 @@ whistle.vase`}
                 optionFilterProp="children"
               >
                 <Option value="">使用默认镜像源</Option>
-                {DEFAULT_REGISTRIES.map(reg => (
+                {DEFAULT_REGISTRIES.map((reg) => (
                   <Option key={reg.value} value={reg.value}>
                     <Space>
                       <GlobalOutlined />
@@ -606,22 +590,22 @@ whistle.vase`}
                     </Space>
                   </Option>
                 ))}
-                {registryHistory.filter(url => !DEFAULT_REGISTRIES.some(r => r.value === url)).map(url => (
-                  <Option key={url} value={url}>
-                    <Space>
-                      <ClockCircleOutlined />
-                      {url}
-                    </Space>
-                  </Option>
-                ))}
+                {registryHistory
+                  .filter((url) => !DEFAULT_REGISTRIES.some((r) => r.value === url))
+                  .map((url) => (
+                    <Option key={url} value={url}>
+                      <Space>
+                        <ClockCircleOutlined />
+                        {url}
+                      </Space>
+                    </Option>
+                  ))}
               </Select>
             </Form.Item>
 
             <Form.Item style={{ marginBottom: 0 }}>
               <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-                <Button onClick={() => setInstallModal(false)}>
-                  取消
-                </Button>
+                <Button onClick={() => setInstallModal(false)}>取消</Button>
                 <Button type="primary" htmlType="submit" loading={loading}>
                   安装
                 </Button>

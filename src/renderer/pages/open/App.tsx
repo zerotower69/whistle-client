@@ -24,11 +24,11 @@ const App: React.FC = () => {
   useEffect(() => {
     const url = getDataUrl();
     let clientUrl = 'whistle://client';
-    
+
     if (url && isHttp(url)) {
       clientUrl = `whistle://client?dataUrl=${url}`;
     }
-    
+
     // Auto-redirect to whistle protocol
     window.location.assign(clientUrl);
   }, []);
@@ -36,11 +36,11 @@ const App: React.FC = () => {
   const handleOpenClient = () => {
     const url = getDataUrl();
     let clientUrl = 'whistle://client';
-    
+
     if (url && isHttp(url)) {
       clientUrl = `whistle://client?dataUrl=${url}`;
     }
-    
+
     window.location.assign(clientUrl);
   };
 
@@ -59,15 +59,15 @@ const App: React.FC = () => {
       >
         <Space direction="vertical" size="large" style={{ width: '100%', textAlign: 'center' }}>
           <RocketOutlined style={{ fontSize: '64px', color: '#1890ff' }} />
-          
+
           <Title level={2} style={{ marginBottom: 0 }}>
             Whistle Client
           </Title>
-          
+
           <Paragraph type="secondary">
             Open Whistle Client to start debugging your web applications
           </Paragraph>
-          
+
           <Space direction="vertical" size="middle" style={{ width: '100%' }}>
             <Button
               type="primary"
@@ -78,13 +78,8 @@ const App: React.FC = () => {
             >
               Open Whistle Client
             </Button>
-            
-            <Button
-              size="large"
-              icon={<DownloadOutlined />}
-              block
-              onClick={handleDownloadCA}
-            >
+
+            <Button size="large" icon={<DownloadOutlined />} block onClick={handleDownloadCA}>
               Download RootCA
             </Button>
           </Space>

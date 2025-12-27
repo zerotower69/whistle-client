@@ -58,7 +58,7 @@ export const showPluginsWindow = () => {
       spellcheck: false,
     },
   });
-  
+
   if (app.isPackaged) {
     pluginsWin.loadFile(path.join(__dirname, '../renderer/pages/plugins/index.html'));
   } else {
@@ -73,7 +73,7 @@ export const showPluginsWindow = () => {
       });
     });
   }
-  
+
   pluginsWin.on('ready-to-show', () => {
     pluginsWin.show();
   });
@@ -97,7 +97,7 @@ export const createWindow = () => {
     keyword = String(keyword).replace(/"/g, '\\"');
     return ctx.execJsSafe(`window.__findWhistleCodeMirrorEditor_("${keyword}", ${prev});`);
   };
-  
+
   // 注册快捷键打开开发者工具
   win.webContents.on('before-input-event', (event, input) => {
     if ((input.control || input.meta) && input.alt && input.key.toLowerCase() === 'i') {

@@ -77,5 +77,5 @@ export default {
   sendMsg,
   setDataUrl,
   isRunning,
-  setRunning
+  setRunning,
 };

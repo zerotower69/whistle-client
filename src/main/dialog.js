@@ -33,7 +33,7 @@ export const showMessageBox = async (message, callback, showSettings, handleCanc
   }
   const { response } = await dialog.showMessageBox(getWin(), {
     message,
-    title: title == null ? 'Error' : (title || ' '),
+    title: title == null ? 'Error' : title || ' ',
     type: type || 'error',
     noLink: true,
     textWidth: 320,

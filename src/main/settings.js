@@ -1,16 +1,10 @@
 import path from 'path';
 import { isIP } from 'net';
 import { lookup } from 'dns';
-import {
-  BrowserWindow, ipcMain, app, globalShortcut,
-} from 'electron';
-import {
-  showWin, getString, LOCALHOST, USERNAME, isMac,
-} from './util';
+import { BrowserWindow, ipcMain, app, globalShortcut } from 'electron';
+import { showWin, getString, LOCALHOST, USERNAME, isMac } from './util';
 import { ICON } from './icons';
-import {
-  getWin, getOptions, getChild, sendMsg, isRunning,
-} from './context';
+import { getWin, getOptions, getChild, sendMsg, isRunning } from './context';
 import { enableProxy, isEnabled } from './proxy';
 import storage from './storage';
 import { showWindow } from './window';
@@ -23,9 +17,9 @@ const HEADER_SIZE_OPTIONS = [512, 1024, 5120, 10240, 51200, 102400];
 let child;
 let storageChanged;
 
-const isPort = p => p > 0 && p < 65536;
+const isPort = (p) => p > 0 && p < 65536;
 
-const getPort = (p, defaultPort) => (isPort(p) ? String(p) : (defaultPort || ''));
+const getPort = (p, defaultPort) => (isPort(p) ? String(p) : defaultPort || '');
 
 const hideSettings = () => {
   if (child) {
@@ -75,7 +69,7 @@ const hasChanged = (data) => {
   return false;
 };
 
-const showToast = msg => {
+const showToast = (msg) => {
   msg = (msg && msg.message) || msg;
   return child.webContents.send('showToast', msg);
 };
@@ -130,8 +124,14 @@ ipcMain.on('applySettings', async (_, data) => {
   storageChanged = curSettings.useDefaultStorage !== data.useDefaultStorage;
   const socksChanged = curSettings.socksPort !== data.socksPort;
   const headerSizeChanged = curSettings.maxHttpHeaderSize !== data.maxHttpHeaderSize;
-  if (!isRunning() || portChanged || hostChanged
-    || socksChanged || storageChanged || headerSizeChanged) {
+  if (
+    !isRunning() ||
+    portChanged ||
+    hostChanged ||
+    socksChanged ||
+    storageChanged ||
+    headerSizeChanged
+  ) {
     app.emit('whistleSettingsChanged', true);
   }
 });

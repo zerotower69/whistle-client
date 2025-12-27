@@ -1,14 +1,10 @@
 import './patch';
 import path from 'path';
 import cp from 'child_process';
-import {
-  app, BrowserWindow, Menu, shell, systemPreferences, ipcMain,
-} from 'electron';
+import { app, BrowserWindow, Menu, shell, systemPreferences, ipcMain } from 'electron';
 import setFindBar from 'find-bar';
 import { writeLogSync } from 'whistle/lib/util/common';
-import {
-  noop, showWin, getErrorStack, getErrorMsg, isMac, getDataUrl,
-} from './util';
+import { noop, showWin, getErrorStack, getErrorMsg, isMac, getDataUrl } from './util';
 import { DOCK_ICON } from './icons';
 import ctx from './context';
 import { showMessageBox } from './dialog';
@@ -55,7 +51,7 @@ let allWinList = [];
 let allWinTitle = [];
 const setAllWinList = (list) => {
   allWinList = list;
-  allWinTitle = list.map(w => w.title);
+  allWinTitle = list.map((w) => w.title);
   return false;
 };
 const compareWinList = (list) => {
@@ -79,20 +75,22 @@ const updateDock = () => {
     return;
   }
   let focusedWin = BrowserWindow.getFocusedWindow();
-  const menus = Menu.buildFromTemplate(allWinList.map((win) => ({
-    label: win.title,
-    type: 'checkbox',
-    checked: focusedWin === win,
-    click() {
-      showWin(win);
-      setImmediate(() => {
-        focusedWin = BrowserWindow.getFocusedWindow();
-        allWinList.forEach((w, i) => {
-          menus.items[i].checked = w === focusedWin;
+  const menus = Menu.buildFromTemplate(
+    allWinList.map((win) => ({
+      label: win.title,
+      type: 'checkbox',
+      checked: focusedWin === win,
+      click() {
+        showWin(win);
+        setImmediate(() => {
+          focusedWin = BrowserWindow.getFocusedWindow();
+          allWinList.forEach((w, i) => {
+            menus.items[i].checked = w === focusedWin;
+          });
         });
-      });
-    },
-  })));
+      },
+    })),
+  );
   app.dock.setMenu(menus);
 };
 
@@ -217,7 +215,7 @@ const handleGlobalException = async (err) => {
     },
     handleAction: restart,
     handleCancel,
-  }).then(res => {
+  }).then((res) => {
     app.waitForExiting = null;
     return res === 1;
   });

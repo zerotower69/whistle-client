@@ -1,19 +1,11 @@
 import path from 'path';
-import {
-  Menu, app, Tray, shell, nativeImage, BrowserWindow,
-} from 'electron';
+import { Menu, app, Tray, shell, nativeImage, BrowserWindow } from 'electron';
 import setContextMenu from 'electron-context-menu';
 import installRootCAFile from 'whistle/bin/ca';
 import pkg from '../../package.json';
-import {
-  isEnabled, enableProxy, disableProxy, setEnabled, getTitle,
-} from './proxy';
+import { isEnabled, enableProxy, disableProxy, setEnabled, getTitle } from './proxy';
 import { showMessageBox } from './dialog';
-import {
-  getJson, getString, requireW2, LOCALHOST,
-  sudoPrompt,
-  getArtifactName,
-} from './util';
+import { getJson, getString, requireW2, LOCALHOST, sudoPrompt, getArtifactName } from './util';
 import { TRAY_ICON, UNCHECK_ICON_PATH, CHECKED_ICON_PATH } from './icons';
 import { getOptions, sendMsg, getWin } from './context';
 import { restart, showWindow } from './window';
@@ -96,13 +88,15 @@ setContextMenu({
   showCopyLink: false,
   showInspectElement: true,
 });
-Menu.setApplicationMenu(Menu.buildFromTemplate([
-  {
-    label: app.getName(),
-    submenu: [RESTART_MENU, QUIT_MENU],
-  },
-  EDIT_MENU,
-]));
+Menu.setApplicationMenu(
+  Menu.buildFromTemplate([
+    {
+      label: app.getName(),
+      submenu: [RESTART_MENU, QUIT_MENU],
+    },
+    EDIT_MENU,
+  ]),
+);
 
 const getIcon = (iconPath) => nativeImage.createFromPath(iconPath).resize(ICON_SIZE);
 
@@ -248,7 +242,9 @@ export const create = async () => {
     }
     checking = true;
     try {
-      const pkg = await getJson('https://raw.githubusercontent.com/avwo/whistle-client/main/package.json');
+      const pkg = await getJson(
+        'https://raw.githubusercontent.com/avwo/whistle-client/main/package.json',
+      );
       const newVersion = getString(pkg && pkg.version);
       if (!newVersion) {
         return showMessageBox('Network Error', checkUpdate);
@@ -264,7 +260,9 @@ export const create = async () => {
         title: '',
         buttons: ['Download', 'View CHANGELOG', 'Cancel'],
         callback() {
-          shell.openExternal(`https://github.com/avwo/whistle-client/releases/download/v${newVersion}/${getArtifactName(newVersion)}`);
+          shell.openExternal(
+            `https://github.com/avwo/whistle-client/releases/download/v${newVersion}/${getArtifactName(newVersion)}`,
+          );
         },
         showSettings() {
           shell.openExternal('https://github.com/avwo/whistle-client/blob/main/CHANGELOG.md');
@@ -332,7 +330,7 @@ export const create = async () => {
               return 'Alt+Command+I';
             }
             return 'Ctrl+Shift+I';
-          }()),
+          })(),
           click(item, focusedWindow) {
             if (focusedWindow) focusedWindow.toggleDevTools();
           },
@@ -345,7 +343,7 @@ export const create = async () => {
       label: 'Hide All Windows',
       click() {
         try {
-          BrowserWindow.getAllWindows().forEach(win => win.hide());
+          BrowserWindow.getAllWindows().forEach((win) => win.hide());
         } catch (e) {}
       },
     },
@@ -420,8 +418,14 @@ export const create = async () => {
         const { http, https } = proxy;
         const { port } = settings;
         const host = settings.host || LOCALHOST;
-        if (!http.enabled || !https.enabled || http.host !== host
-          || https.host !== host || http.port !== port || https.port !== port) {
+        if (
+          !http.enabled ||
+          !https.enabled ||
+          http.host !== host ||
+          https.host !== host ||
+          http.port !== port ||
+          https.port !== port
+        ) {
           if (autoSet) {
             await enableSystemProxy();
           } else {

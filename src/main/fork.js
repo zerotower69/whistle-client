@@ -3,12 +3,10 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { install } from './plugins';
-import {
-  getSettings, showSettings, authorization, reloadPage,
-} from './settings';
-import {
-  closeWhistle, LOCALHOST, VERSION,
-} from './util';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { getSettings, showSettings, authorization, reloadPage } from './settings';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { closeWhistle, LOCALHOST, VERSION } from './util';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -26,9 +24,7 @@ if (!fs.existsSync(SCRIPT)) {
 console.log('Final SCRIPT:', SCRIPT);
 
 import { willQuit } from './window';
-import {
-  setChild, setOptions, getWin, setRunning,
-} from './context';
+import { setChild, setOptions, getWin, setRunning } from './context';
 import { showMessageBox } from './dialog';
 import { create as createMenu, updateRules } from './menu';
 
@@ -85,7 +81,7 @@ const forkWhistle = (restart) => {
     console.error('Whistle child process error:', err, args);
     handleWhistleError(err);
   });
-  child.once('exit', (code,...args) => {
+  child.once('exit', (code, ...args) => {
     console.log(`Whistle child process exited with code ${code}, args:`, args);
     handleWhistleError(code);
   });
@@ -125,7 +121,8 @@ const forkWhistle = (restart) => {
         proxyBypassRules: '<-loopback>',
       });
       try {
-        const { default: installExtension, REACT_DEVELOPER_TOOLS } = await import('electron-devtools-installer');
+        const { default: installExtension, REACT_DEVELOPER_TOOLS } =
+          await import('electron-devtools-installer');
         await installExtension(REACT_DEVELOPER_TOOLS);
       } catch (e) {
         // ignore
@@ -135,15 +132,15 @@ const forkWhistle = (restart) => {
     }
     if (initing) {
       initing = false;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { width, height } = screen.getPrimaryDisplay().workAreaSize;
-      let dockToBottom = '';
-      if (width / (height || 1) < 0.8) {
-        dockToBottom = '&dockToBottom=true';
-      }
       if (isDev && process.env['ELECTRON_RENDERER_URL']) {
-        win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/pages/open/index.html?authorization=${authorization}${dockToBottom}&mode=client&v=${VERSION}`);
+        // Load the new main layout in development mode
+        win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/src/index.html`);
       } else {
-        win.loadURL(`http://local.whistlejs.com/?authorization=${authorization}${dockToBottom}&mode=client&v=${VERSION}`);
+        // Load the new main layout in production mode
+        const path = require('path');
+        win.loadFile(path.join(__dirname, '../renderer/src/index.html'));
       }
       createMenu();
     } else {

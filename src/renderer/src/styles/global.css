@@ -1,0 +1,98 @@
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  overflow: hidden;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+/* Layout 样式 */
+.main-layout {
+  height: 100vh;
+}
+
+.main-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.main-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-header-center {
+  flex: 1;
+  text-align: center;
+}
+
+.main-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.main-sider {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.06);
+}
+
+.main-content {
+  margin: 16px;
+  padding: 24px;
+  background: #fff;
+  min-height: 280px;
+  border-radius: 8px;
+  overflow: auto;
+}
+
+/* 面包屑样式 */
+.main-breadcrumb {
+  margin: 16px 0;
+}
+
+/* Logo 样式 */
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 20px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.logo-icon {
+  font-size: 24px;
+}
+
+/* 页面标题 */
+.page-title {
+  margin: 0 0 24px 0 !important;
+}
+
+/* 暗色主题适配 */
+[data-theme='dark'] .main-header {
+  background: #141414;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45);
+}
+
+[data-theme='dark'] .main-content {
+  background: #141414;
+}
+
+[data-theme='dark'] .logo {
+  color: #1890ff;
+}

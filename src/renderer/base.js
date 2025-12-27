@@ -60,9 +60,12 @@ function showToast(msg, delay) {
   const toast = show('#toast');
   toast.innerHTML = msg;
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => {
-    hide(toast);
-  }, delay > 0 ? delay : 3000);
+  toastTimer = setTimeout(
+    () => {
+      hide(toast);
+    },
+    delay > 0 ? delay : 3000,
+  );
 }
 
 function callFn(fnName, data, cb) {

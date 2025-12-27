@@ -1,11 +1,11 @@
 import path from 'path';
-import {
-  requireW2, compareFile, BASE_DIR, LOCALHOST,
-  sudoPrompt,
-} from './util';
+import { requireW2, compareFile, BASE_DIR, LOCALHOST, sudoPrompt } from './util';
 
 const {
-  enableProxy: _enableProxy, disableProxy: _disableProxy, getMacProxyHelper, getUid,
+  enableProxy: _enableProxy,
+  disableProxy: _disableProxy,
+  getMacProxyHelper,
+  getUid,
 } = requireW2('set-global-proxy');
 
 const TITLE = 'Whistle Web Debugging Proxy';
