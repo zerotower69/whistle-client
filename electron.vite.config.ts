@@ -36,6 +36,7 @@ export default defineConfig({
           open: resolve(__dirname, 'src/renderer/pages/open/index.html'),
           settings: resolve(__dirname, 'src/renderer/pages/settings/index.html'),
           plugins: resolve(__dirname, 'src/renderer/pages/plugins/index.html'),
+          main: resolve(__dirname, 'src/renderer/pages/main/index.html'),
         },
       },
     },

@@ -140,10 +140,15 @@ const forkWhistle = (restart) => {
       if (width / (height || 1) < 0.8) {
         dockToBottom = '&dockToBottom=true';
       }
+      const whistleUrl = `http://local.whistlejs.com/?authorization=${authorization}${dockToBottom}&mode=client&v=${VERSION}`;
+      const encodedWhistleUrl = encodeURIComponent(whistleUrl);
+
       if (isDev && process.env['ELECTRON_RENDERER_URL']) {
-        win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/pages/open/index.html?authorization=${authorization}${dockToBottom}&mode=client&v=${VERSION}`);
+        win.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/pages/main/index.html?whistleUrl=${encodedWhistleUrl}`);
       } else {
-        win.loadURL(`http://local.whistlejs.com/?authorization=${authorization}${dockToBottom}&mode=client&v=${VERSION}`);
+        win.loadFile(path.join(__dirname, '../renderer/pages/main/index.html'), {
+          search: `?whistleUrl=${encodedWhistleUrl}`
+        });
       }
       createMenu();
     } else {

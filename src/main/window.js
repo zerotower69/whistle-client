@@ -35,48 +35,8 @@ export const showWindow = (name) => {
     showWin(ctx.getWin());
   }
   if (name && TABS.includes(name)) {
-    // 如果是插件页面，显示我们自定义的插件管理界面
-    if (name === 'Plugins') {
-      showPluginsWindow();
-    } else {
-      ctx.execJsSafe(`window.showWhistleWebUI("${name}")`);
-    }
+    ctx.execJsSafe(`window.showWhistleWebUI("${name}")`);
   }
-};
-
-export const showPluginsWindow = () => {
-  const pluginsWin = new BrowserWindow({
-    title: 'Plugins Management',
-    width: 1200,
-    height: 800,
-    parent: ctx.getWin(),
-    modal: false,
-    icon: ICON,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      spellcheck: false,
-    },
-  });
-  
-  if (app.isPackaged) {
-    pluginsWin.loadFile(path.join(__dirname, '../renderer/pages/plugins/index.html'));
-  } else {
-    // 在开发环境中，尝试常用的端口
-    const devPort = process.env.VITE_DEV_SERVER_PORT || '5173';
-    const devUrl = `http://localhost:${devPort}/pages/plugins/index.html`;
-    pluginsWin.loadURL(devUrl).catch(() => {
-      // 如果失败，尝试端口 5174
-      pluginsWin.loadURL('http://localhost:5174/pages/plugins/index.html').catch(() => {
-        // 如果还是失败，尝试端口 5175
-        pluginsWin.loadURL('http://localhost:5175/pages/plugins/index.html');
-      });
-    });
-  }
-  
-  pluginsWin.on('ready-to-show', () => {
-    pluginsWin.show();
-  });
 };
 
 export const createWindow = () => {

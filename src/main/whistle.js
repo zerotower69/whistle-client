@@ -145,61 +145,67 @@ const baseOptions = {
   disableInstaller: true,
 };
 
-const proxy = whistle({
-  ...baseOptions,
-  installPlugins(plugins) {
-    sendMsg({
-      type: 'install',
-      plugins,
-    });
-  },
-  handleWebReq(_, res) {
-    res.sendFile(WEB_PAGE);
-  },
-}, () => {
-  log(`Whistle started successfully on port ${baseOptions.port}`);
-  console.log('Whistle started successfully on port', baseOptions.port);
-  sendMsg({
-    type: 'options',
-    options: {
-      ...baseOptions,
-      registryPath: proxy.pluginMgr.REGISTRY_LIST,
-      rootCAFile: proxy.httpsUtil.getRootCAFile(),
+const proxy = whistle(
+  {
+    ...baseOptions,
+    mode: 'client|disableUpdateTips|disableAuthUI|noUIServer',
+    installPlugins(plugins) {
+      sendMsg({
+        type: 'install',
+        plugins,
+      });
     },
-    rules: proxy.rulesUtil.rules.getConfig(),
-  });
-  const host = baseOptions.host || LOCALHOST;
-  const { port } = baseOptions;
-  try {
-    fs.writeFileSync(PROC_PATH, `${process.pid},${host},${port},${SPECIAL_AUTH}`);
-  } catch (e) {}
-  let timer;
-  let changeTimer;
-  const updateRules = () => {
-    if (changeTimer) {
-      return;
-    }
-    clearTimeout(timer);
+    handleWebReq(_, res) {
+      res.sendFile(WEB_PAGE);
+    },
+  },
+  () => {
+    log(`Whistle started successfully on port ${baseOptions.port}`);
+    console.log('Whistle started successfully on port', baseOptions.port);
     sendMsg({
-      type: 'rules',
+      type: 'options',
+      options: {
+        ...baseOptions,
+        registryPath: proxy.pluginMgr.REGISTRY_LIST,
+        rootCAFile: proxy.httpsUtil.getRootCAFile(),
+      },
       rules: proxy.rulesUtil.rules.getConfig(),
     });
+    const host = baseOptions.host || LOCALHOST;
+    const { port } = baseOptions;
+    try {
+      fs.writeFileSync(PROC_PATH, `${process.pid},${host},${port},${SPECIAL_AUTH}`);
+    } catch (e) {}
+    let timer;
+    let changeTimer;
+    const updateRules = () => {
+      if (changeTimer) {
+        return;
+      }
+      clearTimeout(timer);
+      sendMsg({
+        type: 'rules',
+        rules: proxy.rulesUtil.rules.getConfig(),
+      });
+      timer = setTimeout(updateRules, 3000);
+    };
     timer = setTimeout(updateRules, 3000);
-  };
-  timer = setTimeout(updateRules, 3000);
-  const updateImediately = () => {
-    changeTimer = changeTimer || setTimeout(() => {
-      changeTimer = null;
-      updateRules();
-    }, 30);
-  };
-  proxy.pluginMgr.on('updateRules', (type) => {
-    if (type === 'disableAllPlugins') {
-      updateImediately();
-    }
-  });
-  proxy.on('rulesDataChange', updateImediately);
-});
+    const updateImediately = () => {
+      changeTimer =
+        changeTimer ||
+        setTimeout(() => {
+          changeTimer = null;
+          updateRules();
+        }, 30);
+    };
+    proxy.pluginMgr.on('updateRules', (type) => {
+      if (type === 'disableAllPlugins') {
+        updateImediately();
+      }
+    });
+    proxy.on('rulesDataChange', updateImediately);
+  },
+);
 
 process.parentPort.on('message', (data) => {
   data = data && data.data;
