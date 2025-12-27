@@ -24,7 +24,7 @@ export const convertToHAR = (requests: NetworkRequest[]): Har => {
     // If there's a request body, add postData
     if (request.requestBody) {
       harRequest.postData = {
-        mimeType: request.requestHeaders?.['content-type'] || 'application/json',
+        mimeType: request.requestHeaders?.['content-type'] || 'text/plain',
         text: request.requestBody,
       };
     }

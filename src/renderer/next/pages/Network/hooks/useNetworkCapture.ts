@@ -3,7 +3,8 @@ import type { NetworkRequest } from '../types';
 
 /**
  * Hook for network capture
- * This is a mock implementation - replace with actual Whistle integration
+ * TODO: Replace with actual Whistle integration
+ * This is a mock implementation for demonstration purposes
  */
 export const useNetworkCapture = () => {
   const [requests, setRequests] = useState<NetworkRequest[]>([]);

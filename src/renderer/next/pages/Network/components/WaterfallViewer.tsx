@@ -58,17 +58,25 @@ const WaterfallViewer: React.FC<WaterfallViewerProps> = ({
       if (onRequestSelect) {
         const rows = perfCascadeSvg.querySelectorAll('.row-item');
         rows.forEach((row, index) => {
-          row.addEventListener('click', () => {
+          const handleClick = () => {
             const requestId = harData.log.entries[index]?.startedDateTime || String(index);
             onRequestSelect(requestId);
-          });
+          };
+          row.addEventListener('click', handleClick);
         });
       }
+
+      // Cleanup function
+      return () => {
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+        }
+      };
     } catch (error) {
       console.error('Failed to render waterfall:', error);
       if (containerRef.current) {
         containerRef.current.innerHTML =
-          '<div style="padding: 20px; color: #999;">瀑布流渲染失败</div>';
+          '<div style="padding: 20px; color: #999;">Failed to render waterfall</div>';
       }
     }
   }, [harData, onRequestSelect]);

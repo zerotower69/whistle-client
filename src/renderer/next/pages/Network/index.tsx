@@ -41,7 +41,7 @@ const Network: React.FC = () => {
 
   // Handle waterfall request selection
   const handleWaterfallSelect = (requestId: string) => {
-    const request = filteredRequests.find((r) => new Date(r.startTime).toISOString() === requestId);
+    const request = filteredRequests.find((r) => r.id === requestId || new Date(r.startTime).toISOString() === requestId);
     if (request) {
       setSelectedRequest(request);
     }
