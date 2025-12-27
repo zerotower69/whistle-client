@@ -7,6 +7,7 @@ export default defineConfig({
     plugins: [externalizeDepsPlugin()],
     build: {
       outDir: 'build/main',
+      // watch: {},
       rollupOptions: {
         input: {
           index: resolve(__dirname, 'src/main/index.js'),

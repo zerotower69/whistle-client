@@ -101,7 +101,7 @@ const forkWhistle = (isRestart) => {
     if (type === 'plugins') {
       const win = getWin();
       if (win) {
-        win.webContents.send('plugins-list', data.plugins);
+        win.webContents.send('plugins-list', data.plugins, data.disabledAllPlugins);
       }
       return;
     }

@@ -28,6 +28,26 @@ const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 加载上次选中的 Tab
+  React.useEffect(() => {
+    const loadLastTab = async () => {
+      try {
+        const { ipcRenderer } = window.require('electron');
+        const lastTab = await ipcRenderer.invoke('get-setting', 'lastSelectedTab');
+        if (lastTab && lastTab !== location.pathname) {
+          // 检查 lastTab 是否在 menuItems 中，防止无效路径
+          const validPaths = ['/network', '/rules', '/values', '/plugins'];
+          if (validPaths.includes(lastTab)) {
+            navigate(lastTab);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load last tab:', error);
+      }
+    };
+    loadLastTab();
+  }, []);
+
   const {
     token: { colorBgContainer },
   } = theme.useToken();
@@ -78,6 +98,13 @@ const MainLayout: React.FC = () => {
   // 处理菜单点击
   const handleMenuClick = (e: { key: string }) => {
     navigate(e.key);
+    // 保存当前选中的 Tab
+    try {
+      const { ipcRenderer } = window.require('electron');
+      ipcRenderer.invoke('set-setting', { key: 'lastSelectedTab', value: e.key });
+    } catch (error) {
+      console.error('Failed to save last tab:', error);
+    }
   };
 
   // 切换主题

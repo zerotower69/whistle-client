@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import './index.css';
+import { useWhistleSync } from '../../hooks/useWhistleSync';
 import {
   Card,
   Button,
@@ -75,42 +76,70 @@ const Plugins: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
   const [installModal, setInstallModal] = useState(false);
+  const [searchModalVisible, setSearchModalVisible] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedRegistry, setSelectedRegistry] = useState(DEFAULT_REGISTRIES[0].value);
   const [registryHistory, setRegistryHistory] = useState<string[]>([]);
   const [globalPluginsEnabled, setGlobalPluginsEnabled] = useState(true);
   const [checkingUpdate, setCheckingUpdate] = useState<Record<string, boolean>>({});
 
+  // 处理插件列表更新
+  const handlePluginsList = useCallback((pluginsMap: any, disabledAllPlugins?: boolean) => {
+    if (disabledAllPlugins !== undefined) {
+      setGlobalPluginsEnabled(!disabledAllPlugins);
+    }
+    const list = Object.keys(pluginsMap).map((key) => {
+      const p = pluginsMap[key];
+      return {
+        ...p,
+        name: key,
+        enabled: !p.isDisable,
+        installed: true,
+        installedVersion: p.version,
+        latestVersion: p.version,
+        description: p.description || '暂无描述',
+        homepage: p.homepage,
+        author: p.author,
+      };
+    });
+    setInstalledPlugins(list);
+    setLoading(false);
+  }, []);
+
+  // 使用自定义 Hook 处理同步
+  const { waitForPluginUpdate, cancelWaiting } = useWhistleSync(handlePluginsList);
+
   useEffect(() => {
     loadRegistryHistory();
     const { ipcRenderer } = window.require('electron');
 
-    const handlePluginsList = (_: any, pluginsMap: any) => {
-      const list = Object.keys(pluginsMap).map((key) => {
-        const p = pluginsMap[key];
-        return {
-          ...p,
-          name: key,
-          enabled: true, // 暂时默认为 true，后续优化
-          installed: true,
-          installedVersion: p.version,
-          latestVersion: p.version,
-          description: p.description || '暂无描述',
-          homepage: p.homepage,
-          author: p.author,
-          // 其他字段适配
-        };
-      });
-      setInstalledPlugins(list);
-      setLoading(false);
+    // 加载保存的镜像源
+    const loadSavedRegistry = async () => {
+      try {
+        const savedRegistry = await ipcRenderer.invoke('get-setting', 'pluginRegistry');
+        if (savedRegistry) {
+          setSelectedRegistry(savedRegistry);
+          form.setFieldsValue({ registry: savedRegistry });
+        }
+      } catch (error) {
+        console.error('Failed to load saved registry:', error);
+      }
     };
+    loadSavedRegistry();
 
-    ipcRenderer.on('plugins-list', handlePluginsList);
     loadInstalledPlugins();
+  }, []);
 
-    return () => {
-      ipcRenderer.removeListener('plugins-list', handlePluginsList);
+  // 监听快捷键 Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setSearchModalVisible(true);
+      }
     };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
   const loadInstalledPlugins = () => {
@@ -155,7 +184,7 @@ const Plugins: React.FC = () => {
       // 保存镜像源到历史记录
       if (registry) {
         saveRegistryHistory(registry);
-        setSelectedRegistry(registry);
+        handleRegistryChange(registry); // 使用通用的保存逻辑
       }
 
       // 向主进程发送安装请求
@@ -167,15 +196,21 @@ const Plugins: React.FC = () => {
 
       messageApi.info(`正在安装插件: ${pluginNames.join(', ')}...`);
 
+      // 先准备好等待状态同步的 Promise
+      const updatePromise = waitForPluginUpdate();
+
       // 调用主进程的插件安装方法
       const result = await ipcRenderer.invoke('install-plugins', installData);
 
       if (result.success) {
+        // 等待 Whistle 状态同步过来
+        await updatePromise;
         messageApi.success(`插件安装成功: ${pluginNames.join(', ')}`);
         form.resetFields();
         setInstallModal(false);
-        loadInstalledPlugins(); // 重新加载插件列表
       } else {
+        // 如果失败了，清除等待状态
+        cancelWaiting();
         messageApi.error(`插件安装失败: ${result.error}`);
       }
     } catch (error: any) {
@@ -191,12 +226,14 @@ const Plugins: React.FC = () => {
     try {
       // 向主进程发送卸载请求
       const { ipcRenderer } = window.require('electron');
+      const updatePromise = waitForPluginUpdate();
       const result = await ipcRenderer.invoke('uninstall-plugin', pluginName);
 
       if (result.success) {
+        await updatePromise;
         messageApi.success(`插件 ${pluginName} 卸载成功`);
-        loadInstalledPlugins();
       } else {
+        cancelWaiting();
         messageApi.error(`插件卸载失败: ${result.error}`);
       }
     } catch (error: any) {
@@ -241,6 +278,18 @@ const Plugins: React.FC = () => {
   };
 
   // 全局启用/禁用所有插件
+  // 切换镜像源并保存
+  const handleRegistryChange = async (value: string) => {
+    setSelectedRegistry(value);
+    form.setFieldsValue({ registry: value });
+    try {
+      const { ipcRenderer } = window.require('electron');
+      await ipcRenderer.invoke('set-setting', { key: 'pluginRegistry', value });
+    } catch (error) {
+      console.error('Failed to save registry:', error);
+    }
+  };
+
   const handleToggleAllPlugins = (enabled: boolean) => {
     setGlobalPluginsEnabled(enabled);
     try {
@@ -262,7 +311,10 @@ const Plugins: React.FC = () => {
     setSearchLoading(true);
     try {
       const { ipcRenderer } = window.require('electron');
-      const result = await ipcRenderer.invoke('search-plugins', { query: searchTerm });
+      const result = await ipcRenderer.invoke('search-plugins', {
+        query: searchTerm,
+        registry: selectedRegistry,
+      });
 
       if (!result.success) {
         throw new Error(result.error);
@@ -331,12 +383,14 @@ const Plugins: React.FC = () => {
       };
 
       messageApi.info(`正在更新插件: ${pluginName}...`);
+      const updatePromise = waitForPluginUpdate();
       const result = await ipcRenderer.invoke('install-plugins', installData);
 
       if (result.success) {
+        await updatePromise;
         messageApi.success(`插件 ${pluginName} 更新成功`);
-        loadInstalledPlugins();
       } else {
+        cancelWaiting();
         messageApi.error(`插件更新失败: ${result.error}`);
       }
     } catch (error: any) {
@@ -378,15 +432,21 @@ const Plugins: React.FC = () => {
             <Button type="primary" icon={<PlusOutlined />} onClick={() => setInstallModal(true)}>
               安装插件
             </Button>
+
+            <Tooltip title={`搜索插件 (${window.navigator.platform.includes('Mac') ? '⌘K' : 'Ctrl+K'})`}>
+              <Button icon={<SearchOutlined />} onClick={() => setSearchModalVisible(true)}>
+                搜索插件
+              </Button>
+            </Tooltip>
           </Space>
       </div>
 
       <div>
         {/* 统计信息卡片 */}
         <div className="stats-cards">
-          <Row gutter={16}>
+          <Row gutter={16} style={{ display: 'flex', alignItems: 'stretch' }}>
             <Col span={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="已安装插件"
                   value={installedCount}
@@ -396,7 +456,7 @@ const Plugins: React.FC = () => {
               </Card>
             </Col>
             <Col span={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="已启用插件"
                   value={enabledCount}
@@ -406,7 +466,7 @@ const Plugins: React.FC = () => {
               </Card>
             </Col>
             <Col span={6}>
-              <Card>
+              <Card style={{ height: '100%' }}>
                 <Statistic
                   title="可更新插件"
                   value={availableUpdates}
@@ -416,84 +476,45 @@ const Plugins: React.FC = () => {
               </Card>
             </Col>
             <Col span={6}>
-              <Card>
-                <Statistic
-                  title="镜像源"
-                  value={
-                    DEFAULT_REGISTRIES.find((r) => r.value === selectedRegistry)?.label || '自定义'
-                  }
-                  prefix={<GlobalOutlined />}
-                  valueStyle={{ color: '#722ed1' }}
-                />
+              <Card style={{ height: '100%' }}>
+                <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 14, marginBottom: 4 }}>
+                  镜像源
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', height: 38 }}>
+                  <GlobalOutlined style={{ color: '#722ed1', fontSize: 24, marginRight: 8 }} />
+                  <Select
+                    value={selectedRegistry}
+                    onChange={handleRegistryChange}
+                    variant="borderless"
+                    showSearch
+                    placeholder="选择镜像源"
+                    style={{
+                      flex: 1,
+                      marginLeft: -11,
+                      color: '#722ed1',
+                      fontWeight: 'bold',
+                      fontSize: 24,
+                    }}
+                    dropdownMatchSelectWidth={false}
+                  >
+                    {DEFAULT_REGISTRIES.map((reg) => (
+                      <Option key={reg.value} value={reg.value}>
+                        {reg.label}
+                      </Option>
+                    ))}
+                    {registryHistory
+                      .filter((url) => !DEFAULT_REGISTRIES.some((r) => r.value === url))
+                      .map((url) => (
+                        <Option key={url} value={url}>
+                          {url}
+                        </Option>
+                      ))}
+                  </Select>
+                </div>
               </Card>
             </Col>
           </Row>
         </div>
-
-        {/* 搜索区域 */}
-        <Card title="搜索插件" className="search-section">
-          <Space.Compact style={{ display: 'flex' }}>
-            <Input
-              placeholder="搜索插件名称或关键词"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onPressEnter={handleSearchPlugins}
-              style={{ flex: 1 }}
-            />
-            <Button
-              type="primary"
-              icon={<SearchOutlined />}
-              onClick={handleSearchPlugins}
-              loading={searchLoading}
-            >
-              搜索
-            </Button>
-          </Space.Compact>
-
-          {searchResults.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <Text type="secondary">搜索结果 ({searchResults.length})</Text>
-              <List
-                size="small"
-                dataSource={searchResults}
-                renderItem={(plugin) => (
-                  <List.Item
-                    actions={[
-                      <Button
-                        key="install"
-                        size="small"
-                        icon={<DownloadOutlined />}
-                        onClick={() => {
-                          form.setFieldsValue({ plugins: plugin.name });
-                          setInstallModal(true);
-                        }}
-                      >
-                        安装
-                      </Button>,
-                    ]}
-                  >
-                    <List.Item.Meta
-                      title={plugin.name}
-                      description={
-                        <div>
-                          <Text type="secondary">{plugin.description}</Text>
-                          <div>
-                            <Tag color="blue">v{plugin.version}</Tag>
-                            {plugin.keywords?.map((keyword) => (
-                              <Tag key={keyword} color="default">
-                                {keyword}
-                              </Tag>
-                            ))}
-                          </div>
-                        </div>
-                      }
-                    />
-                  </List.Item>
-                )}
-              />
-            </div>
-          )}
-        </Card>
 
         {/* 已安装插件列表 */}
         <Card
@@ -695,6 +716,98 @@ whistle.vase`}
               </Space>
             </Form.Item>
           </Form>
+        </Modal>
+
+        {/* Algolia 风格搜索弹窗 */}
+        <Modal
+          open={searchModalVisible}
+          onCancel={() => setSearchModalVisible(false)}
+          footer={null}
+          closable={false}
+          width={650}
+          styles={{ body: { padding: 0 } }}
+          centered
+        >
+          <div style={{ padding: '16px 20px', borderBottom: '1px solid #f0f0f0' }}>
+            <Input
+              prefix={<SearchOutlined style={{ fontSize: 20, color: '#1890ff' }} />}
+              placeholder="搜索 whistle 插件..."
+              variant="borderless"
+              size="large"
+              autoFocus
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onPressEnter={handleSearchPlugins}
+              suffix={
+                <Space>
+                  {searchLoading && <ReloadOutlined spin />}
+                  <Tag color="default">ESC</Tag>
+                </Space>
+              }
+              style={{ fontSize: 18 }}
+            />
+          </div>
+          <div style={{ maxHeight: 450, overflowY: 'auto', padding: '8px 0' }}>
+            {searchResults.length > 0 ? (
+              <List
+                dataSource={searchResults}
+                renderItem={(plugin) => (
+                  <div
+                    className="search-result-item"
+                    style={{
+                      padding: '12px 20px',
+                      cursor: 'pointer',
+                      transition: 'background 0.2s',
+                    }}
+                    onClick={() => {
+                      form.setFieldsValue({ plugins: plugin.name });
+                      setSearchModalVisible(false);
+                      setInstallModal(true);
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 4 }}>
+                          {plugin.name}
+                          <Tag color="blue" style={{ marginLeft: 8 }}>v{plugin.version}</Tag>
+                        </div>
+                        <div style={{ color: 'rgba(0, 0, 0, 0.45)', fontSize: 13 }}>
+                          {plugin.description}
+                        </div>
+                      </div>
+                      <Button icon={<DownloadOutlined />} size="small">安装</Button>
+                    </div>
+                  </div>
+                )}
+              />
+            ) : searchTerm && !searchLoading ? (
+              <div style={{ padding: '40px 0', textAlign: 'center' }}>
+                <Empty description="未找到相关插件" />
+              </div>
+            ) : (
+              <div style={{ padding: '20px', color: 'rgba(0, 0, 0, 0.45)', textAlign: 'center' }}>
+                输入关键词并回车开始搜索
+              </div>
+            )}
+          </div>
+          <div
+            style={{
+              padding: '12px 20px',
+              background: '#fafafa',
+              borderTop: '1px solid #f0f0f0',
+              fontSize: 12,
+              color: 'rgba(0, 0, 0, 0.45)',
+              display: 'flex',
+              justifyContent: 'space-between',
+            }}
+          >
+            <Space size="large">
+              <span><Tag size="small">↵</Tag> 搜索</span>
+              <span><Tag size="small">↑↓</Tag> 选择</span>
+              <span><Tag size="small">ESC</Tag> 关闭</span>
+            </Space>
+            <span>Powered by npm registry</span>
+          </div>
         </Modal>
       </div>
     </div>

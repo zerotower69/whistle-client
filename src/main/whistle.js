@@ -207,6 +207,13 @@ const proxy = whistle(
         updateImediately();
       }
     });
+    proxy.pluginMgr.on('update', (plugins) => {
+      sendMsg({
+        type: 'plugins',
+        plugins,
+        disabledAllPlugins: !!proxy.pluginMgr.disabledAllPlugins,
+      });
+    });
     proxy.on('rulesDataChange', updateImediately);
   },
 );
@@ -237,13 +244,22 @@ process.parentPort.on('message', (data) => {
     return proxy.rulesUtil.rules.disableAllRules(false);
   }
   if (type === 'disableAllPlugins') {
-    return proxy.pluginMgr.disableAllPlugins(true);
+    proxy.pluginMgr.disableAllPlugins(true);
+    proxy.pluginMgr.refreshPlugins();
+    return;
   }
   if (type === 'enableAllPlugins') {
-    return proxy.pluginMgr.disableAllPlugins(false);
+    proxy.pluginMgr.disableAllPlugins(false);
+    proxy.pluginMgr.refreshPlugins();
+    return;
   }
   if (type === 'refreshPlugins') {
-    return proxy.pluginMgr.refreshPlugins();
+    proxy.pluginMgr.refreshPlugins();
+    return sendMsg({
+      type: 'plugins',
+      plugins: proxy.pluginMgr.getPlugins(),
+      disabledAllPlugins: !!proxy.pluginMgr.disabledAllPlugins,
+    });
   }
   if (type === 'addRegistry') {
     return proxy.pluginMgr.addRegistry(data.registry);
@@ -267,21 +283,33 @@ process.parentPort.on('message', (data) => {
     return sendMsg({
       type: 'plugins',
       plugins: proxy.pluginMgr.getPlugins(),
+      disabledAllPlugins: !!proxy.pluginMgr.disabledAllPlugins,
     });
   }
   if (type === 'uninstallPlugin') {
-    return proxy.pluginMgr.uninstall(data.name);
+    // whistle 的 pluginMgr 没有 uninstall 方法，卸载是通过物理删除文件后调用 refreshPlugins 实现的
+    proxy.pluginMgr.refreshPlugins();
+    setTimeout(() => {
+      sendMsg({
+        type: 'plugins',
+        plugins: proxy.pluginMgr.getPlugins(),
+        disabledAllPlugins: !!proxy.pluginMgr.disabledAllPlugins,
+      });
+    }, 1000);
+    return;
   }
   if (type === 'enablePlugin') {
     const disabledPlugins = proxy.rulesUtil.properties.get('disabledPlugins') || {};
     delete disabledPlugins[data.name];
     proxy.rulesUtil.properties.set('disabledPlugins', disabledPlugins);
+    proxy.pluginMgr.refreshPlugins();
     return;
   }
   if (type === 'disablePlugin') {
     const disabledPlugins = proxy.rulesUtil.properties.get('disabledPlugins') || {};
     disabledPlugins[data.name] = 1;
     proxy.rulesUtil.properties.set('disabledPlugins', disabledPlugins);
+    proxy.pluginMgr.refreshPlugins();
     return;
   }
   if (type === 'exitWhistle') {
