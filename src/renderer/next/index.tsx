@@ -1,10 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import App from './App.tsx';
 import './styles/index.css';
 import 'virtual:uno.css';
 import { loader } from '@monaco-editor/react';
 import * as monaco from 'monaco-editor';
+
+import { initGlobalNavigation } from './utils/navigation';
 
 // Configure Monaco Editor for Electron
 // By passing the monaco instance directly, we bundle it with the app,
@@ -29,6 +31,9 @@ console.error = (...args) => {
   originalError(...args);
   ipcRenderer.send('renderer-log', { level: 'error', message: args.join(' ') });
 };
+
+// Initialize global navigation bridge
+initGlobalNavigation();
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <React.StrictMode>

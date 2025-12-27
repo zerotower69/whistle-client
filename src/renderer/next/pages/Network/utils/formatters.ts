@@ -53,21 +53,23 @@ export const formatDateTime = (timestamp: number): string => {
 export const getFileNameFromUrl = (url: string): string => {
   try {
     const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
-    const segments = pathname.split('/').filter(Boolean);
+    let pathname = urlObj.pathname;
 
-    if (segments.length === 0) {
+    // Remove trailing slash
+    if (pathname.endsWith('/') && pathname.length > 1) {
+      pathname = pathname.slice(0, -1);
+    }
+
+    const segments = pathname.split('/').filter(Boolean);
+    const filename = segments[segments.length - 1];
+
+    if (!filename) {
       return urlObj.hostname;
     }
 
-    const filename = segments[segments.length - 1];
-
-    // 如果文件名是纯数字（通常是 ID），则包含上一级路径或域名以提供更多上下文
-    if (/^\d+$/.test(filename)) {
-      if (segments.length > 1) {
-        return `${segments[segments.length - 2]}/${filename}`;
-      }
-      return `${urlObj.hostname}/${filename}`;
+    // If filename is a number (likely an ID), try to include the previous segment for context
+    if (/^\d+$/.test(filename) && segments.length > 1) {
+      return `${segments[segments.length - 2]}/${filename}`;
     }
 
     return filename;

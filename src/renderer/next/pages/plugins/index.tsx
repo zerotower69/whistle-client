@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import './index.css';
 import { useWhistleSync } from '../../hooks/useWhistleSync';
+import { useNavigate } from 'react-router-dom';
 import {
   Card,
   Button,
@@ -23,6 +24,7 @@ import {
   Popconfirm,
   Badge,
   Alert,
+  List,
 } from 'antd';
 import {
   DownloadOutlined,
@@ -38,7 +40,7 @@ import {
   GlobalOutlined,
 } from '@ant-design/icons';
 
-const { Title, Text, Paragraph } = Typography;
+const { Text, Paragraph } = Typography;
 const { TextArea } = Input;
 const { Option } = Select;
 
@@ -69,6 +71,7 @@ const DEFAULT_REGISTRIES = [
 const Plugins: React.FC = () => {
   const [form] = Form.useForm();
   const [messageApi, contextHolder] = message.useMessage();
+  const navigate = useNavigate();
 
   // 状态管理
   const [installedPlugins, setInstalledPlugins] = useState<Plugin[]>([]);
@@ -597,13 +600,17 @@ const Plugins: React.FC = () => {
                     </Popconfirm>,
                   ]}
                 >
-                  <div style={{ display: 'flex', alignItems: 'flex-start' }}>
-                    <div style={{ flex: 1 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
-                        <Text strong style={{ fontSize: 16, marginRight: 8 }}>
-                          {plugin.name}
-                        </Text>
-                        <Space size={4}>
+                  <List.Item.Meta
+                    title={
+                      <div className="plugin-header">
+                        <Space>
+                          <Text
+                            strong
+                            style={{ cursor: 'pointer', color: '#1890ff' }}
+                            onClick={() => navigate(`/plugins/${plugin.name}`)}
+                          >
+                            {plugin.name}
+                          </Text>
                           {plugin.enabled ? (
                             <Tag color="success" icon={<CheckCircleOutlined />}>
                               已启用
@@ -619,6 +626,8 @@ const Plugins: React.FC = () => {
                             )}
                         </Space>
                       </div>
+                    }
+                    description={
                       <div>
                         <Paragraph ellipsis={{ rows: 2 }} style={{ marginBottom: 8 }}>
                           {plugin.description || '暂无描述'}
@@ -647,18 +656,24 @@ const Plugins: React.FC = () => {
                             </Space>
                           </div>
                         )}
+                        {plugin.homepage && (
+                          <div style={{ marginTop: 8 }}>
+                            <Tooltip title="查看主页">
+                              <Button
+                                type="text"
+                                size="small"
+                                icon={<GlobalOutlined />}
+                                onClick={() => window.open(plugin.homepage)}
+                                style={{ padding: 0, height: 'auto' }}
+                              >
+                                插件主页
+                              </Button>
+                            </Tooltip>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    {plugin.homepage && (
-                      <Tooltip title="查看主页">
-                        <Button
-                          type="text"
-                          icon={<GlobalOutlined />}
-                          onClick={() => window.open(plugin.homepage)}
-                        />
-                      </Tooltip>
-                    )}
-                  </div>
+                    }
+                  />
                 </Card>
               ))}
             </Flex>
@@ -772,6 +787,7 @@ whistle.vase`}
               <Flex vertical>
                 {searchResults.map((plugin) => (
                   <div
+                    key={plugin.name}
                     className="search-result-item"
                     style={{
                       padding: '12px 20px',

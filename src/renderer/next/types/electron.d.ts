@@ -1,5 +1,6 @@
 interface Window {
   require: (module: string) => any;
+  showWhistleWebUI: (name: string) => void;
 }
 
 interface IpcRenderer {

@@ -35,12 +35,12 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
   // Extract existing group names
   const existingGroups = useMemo(() => {
     const groups = new Set<string>();
-    values.forEach(v => {
+    values.forEach((v) => {
       if (v.name.includes('/')) {
         groups.add(v.name.split('/')[0]);
       }
     });
-    return Array.from(groups).map(g => ({ value: g }));
+    return Array.from(groups).map((g) => ({ value: g }));
   }, [values]);
 
   const validateName = (name: string, isGroup: boolean) => {
@@ -51,7 +51,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
         return false;
       }
       // Check if group already exists
-      const groupExists = values.some(v => v.name.startsWith(`${name}/`));
+      const groupExists = values.some((v) => v.name.startsWith(`${name}/`));
       if (groupExists) {
         message.warning('【该组名已存在】');
         return false;
@@ -62,7 +62,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
         return false;
       }
       // Check if key already exists
-      const keyExists = values.some(v => v.name === name);
+      const keyExists = values.some((v) => v.name === name);
       if (keyExists) {
         message.warning('【该key值已经存在】');
         return false;
@@ -74,10 +74,10 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
   const handleCreate = () => {
     form.validateFields().then((values) => {
       if (!validateName(values.name, isGroupMode)) return;
-      
+
       const finalName = isGroupMode ? `${values.name}/` : values.name;
       onCreate(finalName, values.language || 'text');
-      
+
       setIsCreateModalOpen(false);
       form.resetFields();
       setIsGroupMode(false);
@@ -115,7 +115,7 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
       }
 
       // Check for duplicates during rename
-      const isDuplicate = values.some(v => v.key !== selectedKey && v.name === newName);
+      const isDuplicate = values.some((v) => v.key !== selectedKey && v.name === newName);
       if (isDuplicate) {
         message.warning('【该名称已存在】');
         return;
@@ -183,8 +183,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
       >
         <Form form={form} layout="vertical" style={{ marginTop: 16 }}>
           <Form.Item label="类型">
-            <Radio.Group 
-              value={isGroupMode} 
+            <Radio.Group
+              value={isGroupMode}
               onChange={(e) => setIsGroupMode(e.target.value)}
               optionType="button"
               buttonStyle="solid"
@@ -201,12 +201,8 @@ const Toolbar: React.FC<ToolbarProps> = ({ values, selectedKey, onCreate, onDele
                 return option!.value.toUpperCase().indexOf(inputValue.toUpperCase()) !== -1;
               }}
             >
-              <Input 
-                placeholder={
-                  isGroupMode 
-                    ? "分组名不可以包含/" 
-                    : "输入/将自动分组，不支持嵌套分组"
-                } 
+              <Input
+                placeholder={isGroupMode ? '分组名不可以包含/' : '输入/将自动分组，不支持嵌套分组'}
               />
             </AutoComplete>
           </Form.Item>

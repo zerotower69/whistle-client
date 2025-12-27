@@ -25,11 +25,11 @@ const LANGUAGE_OPTIONS = [
 /**
  * Right panel component with Monaco Editor
  */
-const ValueEditor: React.FC<ValueEditorProps> = ({ 
-  value, 
-  onSave, 
+const ValueEditor: React.FC<ValueEditorProps> = ({
+  value,
+  onSave,
   onLanguageChange,
-  onContentChange 
+  onContentChange,
 }) => {
   const editorRef = useRef<any>(null);
   const [isDarkMode, setIsDarkMode] = React.useState(

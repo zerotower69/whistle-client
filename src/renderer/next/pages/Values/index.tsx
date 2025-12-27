@@ -95,10 +95,10 @@ const Values: React.FC = () => {
         />
         <Layout style={{ height: 'calc(100% - 40px)' }}>
           <Sider width={250} theme="light" style={{ borderRight: '1px solid #f0f0f0' }}>
-            <ValueTree 
-              values={values} 
-              selectedKey={selectedKey} 
-              onSelect={handleSelect} 
+            <ValueTree
+              values={values}
+              selectedKey={selectedKey}
+              onSelect={handleSelect}
               dirtyKeys={isDirty && selectedKey ? [selectedKey] : []}
             />
           </Sider>

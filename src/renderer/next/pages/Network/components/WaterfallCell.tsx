@@ -76,7 +76,13 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
           <span>{phase.duration.toFixed(2)}ms</span>
         </div>
       ))}
-      <div style={{ marginTop: TOOLTIP_BORDER_TOP_MARGIN, paddingTop: TOOLTIP_BORDER_TOP_PADDING, borderTop: '1px solid #fff3' }}>
+      <div
+        style={{
+          marginTop: TOOLTIP_BORDER_TOP_MARGIN,
+          paddingTop: TOOLTIP_BORDER_TOP_PADDING,
+          borderTop: '1px solid #fff3',
+        }}
+      >
         <strong>总计: {request.timing.total.toFixed(2)}ms</strong>
       </div>
     </div>
