@@ -1,3 +1,4 @@
+import React from 'react';
 // Import the existing Plugin App component
 import PluginApp from '../../../pages/plugins/App';
 
