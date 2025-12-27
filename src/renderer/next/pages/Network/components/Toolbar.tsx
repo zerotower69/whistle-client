@@ -55,6 +55,10 @@ const Toolbar: React.FC<ToolbarProps> = ({
     'other',
   ];
 
+  const handleToggleLog = () => {
+    window.dispatchEvent(new CustomEvent('toggle-log-viewer'));
+  };
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 16, height: '100%' }}>
       <Space>
@@ -69,6 +73,12 @@ const Toolbar: React.FC<ToolbarProps> = ({
         </Button>
         <Button icon={<DownloadOutlined />} onClick={exportHAR}>
           导出 HAR
+        </Button>
+        <Button 
+          icon={<div className="i-mdi:terminal w-4 h-4" />} 
+          onClick={handleToggleLog}
+        >
+          日志
         </Button>
       </Space>
 

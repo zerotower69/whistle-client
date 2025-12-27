@@ -36,10 +36,26 @@ export const formatDateTime = (timestamp: number): string => {
 export const getFileNameFromUrl = (url: string): string => {
   try {
     const urlObj = new URL(url);
-    const pathname = urlObj.pathname;
-    const segments = pathname.split('/');
+    let pathname = urlObj.pathname;
+    
+    // Remove trailing slash
+    if (pathname.endsWith('/') && pathname.length > 1) {
+      pathname = pathname.slice(0, -1);
+    }
+    
+    const segments = pathname.split('/').filter(Boolean);
     const filename = segments[segments.length - 1];
-    return filename || urlObj.hostname;
+    
+    if (!filename) {
+      return urlObj.hostname;
+    }
+    
+    // If filename is a number (likely an ID), try to include the previous segment for context
+    if (/^\d+$/.test(filename) && segments.length > 1) {
+      return `${segments[segments.length - 2]}/${filename}`;
+    }
+    
+    return filename;
   } catch {
     return url;
   }

@@ -37,13 +37,14 @@ const Network: React.FC = () => {
   };
 
   return (
-    <Layout style={{ height: '100vh', overflow: 'hidden' }}>
+    <Layout style={{ height: '100%', overflow: 'hidden', background: '#fff' }}>
       <Header
         style={{
           background: '#fff',
-          padding: '0 24px',
+          padding: '0 12px',
           borderBottom: '1px solid #f0f0f0',
-          height: 64,
+          height: 40,
+          lineHeight: '40px',
         }}
       >
         <Toolbar
@@ -61,7 +62,7 @@ const Network: React.FC = () => {
         />
       </Header>
 
-      <Content style={{ height: 'calc(100vh - 64px)', overflow: 'hidden' }}>
+      <Content style={{ height: 'calc(100% - 40px)', overflow: 'hidden' }}>
         <Splitter layout="vertical" style={{ height: '100%' }}>
           <Splitter.Panel defaultSize="60%" min="40%" max="80%">
             <RequestTable

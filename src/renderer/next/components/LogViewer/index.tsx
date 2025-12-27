@@ -32,6 +32,15 @@ const LogViewer: React.FC = () => {
       isInitialized.current = true;
     };
     loadSettings();
+
+    // 监听全局显示事件
+    const handleToggle = () => {
+      setVisible(true);
+      setMinimized(false);
+      setUnreadCount(0);
+    };
+    window.addEventListener('toggle-log-viewer', handleToggle);
+    return () => window.removeEventListener('toggle-log-viewer', handleToggle);
   }, []);
 
   // 状态变更时保存
