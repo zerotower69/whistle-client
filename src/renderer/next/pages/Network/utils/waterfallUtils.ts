@@ -2,6 +2,9 @@ import type { NetworkRequest, WaterfallData, WaterfallPhase } from '../types';
 
 /**
  * Phase color configuration
+ * Note: Colors are chosen for visual distinction. For accessibility,
+ * the waterfall also includes text labels and timing information in tooltips.
+ * Phase names and durations are always displayed regardless of color perception.
  */
 const PHASE_COLORS = {
   queueing: '#e0e0e0', // Light gray

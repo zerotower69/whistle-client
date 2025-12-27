@@ -3,6 +3,16 @@ import { Tooltip } from 'antd';
 import type { NetworkRequest } from '../types';
 import { calculateWaterfallData, formatPhaseName } from '../utils/waterfallUtils';
 
+// Constants for dimensions
+const CELL_HEIGHT = 20;
+const COLOR_BLOCK_SIZE = 12;
+const COLOR_BLOCK_MARGIN = 4;
+const COLOR_BLOCK_BORDER_RADIUS = 2;
+const TOOLTIP_MARGIN_BOTTOM = 8;
+const TOOLTIP_GAP = 16;
+const TOOLTIP_BORDER_TOP_MARGIN = 8;
+const TOOLTIP_BORDER_TOP_PADDING = 8;
+
 interface WaterfallCellProps {
   request: NetworkRequest;
   baseTime: number; // First request start time
@@ -29,18 +39,18 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
   // Generate tooltip content
   const tooltipContent = (
     <div>
-      <div style={{ marginBottom: 8, fontWeight: 'bold' }}>{request.url}</div>
+      <div style={{ marginBottom: TOOLTIP_MARGIN_BOTTOM, fontWeight: 'bold' }}>{request.url}</div>
       {phases.map((phase, index) => (
-        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: 16 }}>
+        <div key={index} style={{ display: 'flex', justifyContent: 'space-between', gap: TOOLTIP_GAP }}>
           <span>
             <span
               style={{
                 display: 'inline-block',
-                width: 12,
-                height: 12,
+                width: COLOR_BLOCK_SIZE,
+                height: COLOR_BLOCK_SIZE,
                 backgroundColor: phase.color,
-                marginRight: 4,
-                borderRadius: 2,
+                marginRight: COLOR_BLOCK_MARGIN,
+                borderRadius: COLOR_BLOCK_BORDER_RADIUS,
               }}
             />
             {formatPhaseName(phase.name)}
@@ -48,7 +58,7 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
           <span>{phase.duration.toFixed(2)}ms</span>
         </div>
       ))}
-      <div style={{ marginTop: 8, paddingTop: 8, borderTop: '1px solid #fff3' }}>
+      <div style={{ marginTop: TOOLTIP_BORDER_TOP_MARGIN, paddingTop: TOOLTIP_BORDER_TOP_PADDING, borderTop: '1px solid #fff3' }}>
         <strong>总计: {request.timing.total.toFixed(2)}ms</strong>
       </div>
     </div>
@@ -59,7 +69,7 @@ const WaterfallCell: React.FC<WaterfallCellProps> = ({
       <div
         style={{
           position: 'relative',
-          height: 20,
+          height: CELL_HEIGHT,
           width,
         }}
       >

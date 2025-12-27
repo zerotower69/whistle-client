@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { Empty } from 'antd';
 import Editor from '@monaco-editor/react';
 import type { NetworkRequest } from '../../types';
+import { useTheme } from '../../hooks/useTheme';
 
 interface RequestTabProps {
   request: NetworkRequest | null;
@@ -11,7 +12,7 @@ interface RequestTabProps {
  * Request tab showing request body
  */
 const RequestTab: React.FC<RequestTabProps> = ({ request }) => {
-  const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDarkMode = useTheme();
 
   // Detect content type
   const contentType = useMemo(() => {

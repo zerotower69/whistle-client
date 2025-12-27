@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import type { NetworkRequest, HttpMethod, ResourceType } from '../types';
 
 /**
@@ -9,7 +9,7 @@ export const useNetworkFilter = (requests: NetworkRequest[]) => {
   const [selectedMethods, setSelectedMethods] = useState<HttpMethod[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<ResourceType[]>([]);
 
-  const filteredRequests = useCallback(() => {
+  const filteredRequests = useMemo(() => {
     return requests.filter((request) => {
       // Search filter
       if (searchText && !request.url.toLowerCase().includes(searchText.toLowerCase())) {
@@ -28,7 +28,7 @@ export const useNetworkFilter = (requests: NetworkRequest[]) => {
 
       return true;
     });
-  }, [requests, searchText, selectedMethods, selectedTypes])();
+  }, [requests, searchText, selectedMethods, selectedTypes]);
 
   return {
     filteredRequests,

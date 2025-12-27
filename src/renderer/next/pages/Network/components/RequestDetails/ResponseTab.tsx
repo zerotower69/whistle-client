@@ -3,6 +3,7 @@ import { Button, Space, Radio, message, Empty } from 'antd';
 import { CopyOutlined, DownloadOutlined, FullscreenOutlined } from '@ant-design/icons';
 import Editor from '@monaco-editor/react';
 import type { NetworkRequest } from '../../types';
+import { useTheme } from '../../hooks/useTheme';
 
 interface ResponseTabProps {
   request: NetworkRequest | null;
@@ -15,7 +16,7 @@ type ViewMode = 'formatted' | 'raw' | 'preview';
  */
 const ResponseTab: React.FC<ResponseTabProps> = ({ request }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('formatted');
-  const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDarkMode = useTheme();
 
   // Detect content type
   const contentType = useMemo(() => {
