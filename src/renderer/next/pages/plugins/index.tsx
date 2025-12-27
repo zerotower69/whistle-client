@@ -415,14 +415,14 @@ const Plugins: React.FC = () => {
 
   // 获取插件 UI 地址
   const getPluginHomepage = (plugin: Plugin): string => {
-    // 优先使用 pluginHomepage
+    // 优先使用 homepage
     if (plugin.homepage) {
       return plugin.homepage;
     }
 
     // 否则使用默认地址
-    const port = 8899; // 默认端口，可以从配置获取
-    return `http://local.whistlejs.com:${port}/plugin.${plugin.name}/`;
+    const DEFAULT_WHISTLE_PORT = 8899;
+    return `http://local.whistlejs.com:${DEFAULT_WHISTLE_PORT}/plugin.${plugin.name}/`;
   };
 
   // 打开插件 Tab
