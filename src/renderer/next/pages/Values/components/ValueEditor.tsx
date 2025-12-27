@@ -27,13 +27,26 @@ const LANGUAGE_OPTIONS = [
 const ValueEditor: React.FC<ValueEditorProps> = ({ value, onSave, onLanguageChange }) => {
   const editorRef = useRef<any>(null);
   const [content, setContent] = React.useState('');
-  const [isDarkMode] = React.useState(window.matchMedia('(prefers-color-scheme: dark)').matches);
+  const [isDarkMode, setIsDarkMode] = React.useState(
+    window.matchMedia('(prefers-color-scheme: dark)').matches
+  );
+
+  // Listen for theme changes
+  useEffect(() => {
+    const handleThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      setIsDarkMode(customEvent.detail === 'dark');
+    };
+
+    window.addEventListener('theme-change', handleThemeChange);
+    return () => window.removeEventListener('theme-change', handleThemeChange);
+  }, []);
 
   useEffect(() => {
     if (value) {
       setContent(value.content);
     }
-  }, [value?.key]);
+  }, [value]);
 
   const handleEditorDidMount = (editor: any) => {
     editorRef.current = editor;

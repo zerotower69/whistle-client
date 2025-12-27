@@ -7,7 +7,6 @@ import type { ValueItem } from '../types';
 export const useValues = () => {
   const [values, setValues] = useState<ValueItem[]>([]);
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [loading] = useState(false);
 
   // Load data from localStorage
   const loadValues = useCallback(() => {
@@ -91,7 +90,6 @@ export const useValues = () => {
     values,
     selectedKey,
     selectedValue,
-    loading,
     setSelectedKey,
     createValue,
     deleteValue,
