@@ -134,3 +134,10 @@ dist
 # Vite build artifacts
 public/pages/
 public/assets/
+build/
+
+# Build Output
+dist/
+out/
+build/
+

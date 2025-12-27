@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>测试插件页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        button {
+            background-color: #1890ff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #40a9ff;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f6f6f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>插件页面测试</h1>
+        
+        <div class="status">
+            <p><strong>插件页面状态：</strong> <span id="status">检查中...</span></p>
+        </div>
+        
+        <button onclick="openPluginsPage()">打开插件管理页面</button>
+        <button onclick="testPluginInstallation()">测试插件安装</button>
+        <button onclick="showPluginsInWhistle()">在 Whistle 中显示插件页面</button>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+        
+        // 检查插件页面是否可用
+        function checkPluginPageStatus() {
+            fetch('http://localhost:5173/pages/plugins/index.html')
+                .then(response => {
+                    if (response.ok) {
+                        document.getElementById('status').textContent = '✅ 插件页面可用';
+                        document.getElementById('status').style.color = 'green';
+                    } else {
+                        document.getElementById('status').textContent = '❌ 插件页面不可用';
+                        document.getElementById('status').style.color = 'red';
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('status').textContent = '❌ 无法连接到开发服务器';
+                    document.getElementById('status').style.color = 'red';
+                });
+        }
+        
+        // 打开插件页面
+        function openPluginsPage() {
+            window.open('http://localhost:5173/pages/plugins/index.html', '_blank');
+        }
+        
+        // 测试插件安装
+        async function testPluginInstallation() {
+            try {
+                const result = await ipcRenderer.invoke('install-plugins', {
+                    pkgs: [{ name: 'whistle.test' }],
+                    registry: 'https://registry.npmjs.org/'
+                });
+                
+                const resultDiv = document.getElementById('result');
+                if (result.success) {
+                    resultDiv.innerHTML = '<p style="color: green;">✅ 插件安装测试成功</p>';
+                } else {
+                    resultDiv.innerHTML = `<p style="color: red;">❌ 插件安装测试失败: ${result.error}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p style="color: red;">❌ 测试出错: ${error.message}</p>`;
+            }
+        }
+        
+        // 在 whistle 中显示插件页面（原方式）
+        function showPluginsInWhistle() {
+            // 通过原有方式打开 whistle 的插件页面
+            window.location.href = 'http://localhost:8899/#!/plugins';
+        }
+        
+        // 页面加载时检查状态
+        document.addEventListener('DOMContentLoaded', function() {
+            checkPluginPageStatus();
+        });
+    </script>
+</body>
+</html>

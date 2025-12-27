@@ -16,8 +16,7 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "paths": {
-      "~imgPath/*": ["../assets/images/*"],
-      "@/*": ["./src/*"]
+      "@/*": ["./src/renderer/*"]
     }
   },
   "include": ["src"],
